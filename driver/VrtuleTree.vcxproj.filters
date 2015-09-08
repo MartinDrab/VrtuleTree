@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source files">
+      <UniqueIdentifier>{8b2781db-2fe4-40f3-b802-90b5cade0726}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource files">
+      <UniqueIdentifier>{3bab4b7c-4e83-496c-a23f-b0429e619f34}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Header files">
+      <UniqueIdentifier>{0530f06d-1939-4861-9cfd-2687e290c23f}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="snapshot.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils-devices.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils-dym-array.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils-mem.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils-stack.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils-stacked-memory.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="allocator.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="driver.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="preprocessor.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="ioctls.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="snapshot.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils-devices.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils-dym-array.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils-mem.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils-stack.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils-stacked-memory.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="allocator.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

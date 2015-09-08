@@ -1,0 +1,91 @@
+
+#ifndef __VRTULETREE_SNAPSHOT_H_
+#define __VRTULETREE_SNAPSHOT_H_
+
+#include <ntifs.h>
+
+typedef struct _SNAPSHOT_DEVICE_RELATIONS_INFO {
+	ULONG Count;
+	ULONG Size;
+	ULONG_PTR RelationsOffset;
+} SNAPSHOT_DEVICE_RELATIONS_INFO, *PSNAPSHOT_DEVICE_RELATIONS_INFO;
+
+typedef struct _SNAPSHOT_DRIVER_INFO {
+	SIZE_T Size;
+	PVOID ImageBase;
+	ULONG32 ImageSize;
+	ULONG32 Flags;
+	PVOID StartIo;
+	PVOID DriverEntry;
+	PVOID DriverUnload;
+	ULONG_PTR NameOffset;
+	PVOID ObjectAddress;
+	ULONG_PTR NumberOfDevices;
+	ULONG_PTR DevicesOffset;  
+	PDRIVER_DISPATCH MajorFunctions [IRP_MJ_MAXIMUM_FUNCTION + 1];
+} SNAPSHOT_DRIVER_INFO, *PSNAPSHOT_DRIVER_INFO;
+
+typedef struct _SNAPSHOT_VPB_INFO {
+	ULONG Size;
+	ULONG Flags;
+	ULONG SerialNumber;
+	ULONG ReferenceCount;
+	PDEVICE_OBJECT FileSystemDeviceObject;
+	PDEVICE_OBJECT VolumeDeviceObject;
+	ULONG_PTR VolumeLabel;
+} SNAPSHOT_VPB_INFO, *PSNAPSHOT_VPB_INFO;
+
+typedef struct _SNAPSHOT_DEVICE_ADVANCED_PNP_INFO {
+	ULONG_PTR Size;
+	ULONG_PTR DeviceId;
+	ULONG_PTR InstanceId;
+	ULONG_PTR HardwareIds;
+	ULONG_PTR CompatibleIds;
+	PSNAPSHOT_DEVICE_RELATIONS_INFO RemovalRelationsInfo;
+	PSNAPSHOT_DEVICE_RELATIONS_INFO EjectRelationsInfo;
+	DEVICE_CAPABILITIES Capabilities;
+} SNAPSHOT_DEVICE_ADVANCED_PNP_INFO, *PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO;
+
+typedef struct _SNAPSHOT_DEVICE_INFO {
+	SIZE_T Size;
+	ULONG_PTR NameOffset;
+	PVOID ObjectAddress;
+	ULONG Flags;
+	ULONG Characteristics;
+	ULONG DeviceType;
+	ULONG_PTR NumberOfLowerDevices;
+	ULONG_PTR LowerDevicesOffset;
+	ULONG_PTR NumberOfUpperDevices;
+	ULONG_PTR UpperDevicesOffset;
+	ULONG_PTR DisplayNameOffset;
+	ULONG_PTR VendorNameOffset;
+	ULONG_PTR DescriptionOffset;
+	ULONG_PTR EnumeratorOffset;
+	ULONG_PTR LocationOffset;
+	ULONG_PTR ClassNameOffset;
+	ULONG_PTR ClassGuidOffset;
+	PDEVICE_OBJECT DiskDevice;
+	PVOID Vpb;
+	PSNAPSHOT_VPB_INFO VpbInfo;
+	PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO AdvancedPnPInfo;
+	PSECURITY_DESCRIPTOR Security;
+} SNAPSHOT_DEVICE_INFO, *PSNAPSHOT_DEVICE_INFO;
+
+typedef struct _SNAPSHOT_DRIVERLIST {
+   SIZE_T Size;
+   ULONG_PTR NumberOfDrivers;
+   ULONG_PTR DriversOffset;
+} SNAPSHOT_DRIVERLIST, *PSNAPSHOT_DRIVERLIST;
+
+typedef struct _VRTULETREE_KERNEL_SNAPSHOT {
+	SNAPSHOT_DRIVERLIST DriverList;
+}  VRTULETREE_KERNEL_SNAPSHOT, *PVRTULETREE_KERNEL_SNAPSHOT;
+
+
+NTSTATUS SnapshotCreate(PVRTULETREE_KERNEL_SNAPSHOT *Snapshot);
+VOID SnapshotFree(PVRTULETREE_KERNEL_SNAPSHOT Snapshot);
+NTSTATUS SnapshotToUser(PVRTULETREE_KERNEL_SNAPSHOT Snapshot, PVOID *Address);
+
+
+
+#endif

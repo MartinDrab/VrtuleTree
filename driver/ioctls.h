@@ -1,0 +1,13 @@
+
+#ifndef __VRTULETREE_IOCTLS_H_
+#define __VRTULETREE_IOCTLS_H_
+
+#include <ntifs.h>
+
+
+
+#define IOCTL_VTREE_SNAPSHOT_GET             CTL_CODE(FILE_DEVICE_UNKNOWN, 0x02, METHOD_BUFFERED, FILE_WRITE_ACCESS)
+
+
+
+#endif
