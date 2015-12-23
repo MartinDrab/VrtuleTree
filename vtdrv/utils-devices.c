@@ -144,19 +144,19 @@ NTSTATUS _GetWCharDeviceProperty(PDEVICE_OBJECT DeviceObject, DEVICE_REGISTRY_PR
  */
 VOID _ReleaseDriverArray(PDRIVER_OBJECT *DriverArray, SIZE_T DriverCount)
 {
-   LONG i = 0;
-   DEBUG_ENTER_FUNCTION("DriverArray=0x%p; DriverCount=%u", DriverArray, DriverCount);
+	SIZE_T i = 0;
+	DEBUG_ENTER_FUNCTION("DriverArray=0x%p; DriverCount=%u", DriverArray, DriverCount);
 
-   if (DriverCount > 0) {
-      for (i = 0; i < DriverCount; ++i)
-         ObDereferenceObject(DriverArray[i]);
-   }
+	if (DriverCount > 0) {
+		for (i = 0; i < DriverCount; ++i)
+			ObDereferenceObject(DriverArray[i]);
+	}
 
-   if (DriverArray != NULL)
-      HeapMemoryFree(DriverArray);
+	if (DriverArray != NULL)
+		HeapMemoryFree(DriverArray);
 
-   DEBUG_EXIT_FUNCTION_VOID();
-   return;
+	DEBUG_EXIT_FUNCTION_VOID();
+	return;
 }
 
 
@@ -169,20 +169,19 @@ VOID _ReleaseDriverArray(PDRIVER_OBJECT *DriverArray, SIZE_T DriverCount)
  */
 VOID _ReleaseDeviceArray(PDEVICE_OBJECT *DeviceArray, SIZE_T ArrayLength)
 {
-   LONG i = 0;
-   DEBUG_ENTER_FUNCTION("DeviceArray=0x%p; ArrayLength=%u", DeviceArray, ArrayLength);
+	SIZE_T i = 0;
+	DEBUG_ENTER_FUNCTION("DeviceArray=0x%p; ArrayLength=%u", DeviceArray, ArrayLength);
 
-   if (ArrayLength > 0) {
-      for (i = 0; i < ArrayLength; ++i)
-         ObDereferenceObject(DeviceArray[i]);
+	if (ArrayLength > 0) {
+		for (i = 0; i < ArrayLength; ++i)
+			ObDereferenceObject(DeviceArray[i]);
+	}
 
-   }
+	if (DeviceArray != NULL)
+		HeapMemoryFree(DeviceArray);
 
-   if (DeviceArray != NULL)
-      HeapMemoryFree(DeviceArray);
-
-   DEBUG_EXIT_FUNCTION_VOID();
-   return;
+	DEBUG_EXIT_FUNCTION_VOID();
+	return;
 }
 
 
@@ -301,90 +300,87 @@ static NTSTATUS _AppendDriverNameToDirectory(PUNICODE_STRING Dest, PUNICODE_STRI
  */
 NTSTATUS _GetDriversInDirectory(PUNICODE_STRING Directory, PDRIVER_OBJECT **DriverArray, PSIZE_T DriverCount)
 {
-   SIZE_T TmpDriverCount = 0;
-   PDRIVER_OBJECT *TmpDriverArray = NULL;
-   PUTILS_DYM_ARRAY DriverDymArray = NULL;
-   HANDLE DirectoryHandle;
-   OBJECT_ATTRIBUTES ObjectAttributes;
-   NTSTATUS Status = STATUS_UNSUCCESSFUL;
-   UNICODE_STRING DriverTypeStr;
-   DEBUG_ENTER_FUNCTION("Directory=%S; DriverArray=0x%p; DriverCount=0x%p", Directory->Buffer, DriverArray, DriverCount);
+	PDRIVER_OBJECT *TmpDriverArray = NULL;
+	PUTILS_DYM_ARRAY DriverDymArray = NULL;
+	HANDLE DirectoryHandle;
+	OBJECT_ATTRIBUTES ObjectAttributes;
+	NTSTATUS Status = STATUS_UNSUCCESSFUL;
+	UNICODE_STRING DriverTypeStr;
+	DEBUG_ENTER_FUNCTION("Directory=%S; DriverArray=0x%p; DriverCount=0x%p", Directory->Buffer, DriverArray, DriverCount);
 
-   *DriverCount = 0;
-   *DriverArray = NULL;
-   Status = DymArrayCreate(PagedPool, &DriverDymArray);
-   if (NT_SUCCESS(Status)) {
-   // Initialize string with the name of Driver Object Type.
-   RtlInitUnicodeString(&DriverTypeStr, L"Driver");
-   // Open the object directory specified in the first argument.
-      InitializeObjectAttributes(&ObjectAttributes, Directory, OBJ_CASE_INSENSITIVE, NULL, NULL);
-      Status = ZwOpenDirectoryObject(&DirectoryHandle, DIRECTORY_QUERY, &ObjectAttributes);
-      if (NT_SUCCESS(Status)) {
-         ULONG QueryContext = 0;
-         // Assume that no directory entry exceeds 1024 bytes in length.
-         UCHAR Buffer [1024];
-         POBJECT_DIRECTORY_INFORMATION DirInfo = (POBJECT_DIRECTORY_INFORMATION)&Buffer;
+	*DriverCount = 0;
+	*DriverArray = NULL;
+	Status = DymArrayCreate(PagedPool, &DriverDymArray);
+	if (NT_SUCCESS(Status)) {
+		// Initialize string with the name of Driver Object Type.
+		RtlInitUnicodeString(&DriverTypeStr, L"Driver");
+		// Open the object directory specified in the first argument.
+		InitializeObjectAttributes(&ObjectAttributes, Directory, OBJ_CASE_INSENSITIVE, NULL, NULL);
+		Status = ZwOpenDirectoryObject(&DirectoryHandle, DIRECTORY_QUERY, &ObjectAttributes);
+		if (NT_SUCCESS(Status)) {
+			ULONG QueryContext = 0;
+			// Assume that no directory entry exceeds 1024 bytes in length.
+			UCHAR Buffer [1024];
+			POBJECT_DIRECTORY_INFORMATION DirInfo = (POBJECT_DIRECTORY_INFORMATION)&Buffer;
 
-         // Attempt to list contents of the directory, filter everything except drivers out,
-         // and add the information to the array.
-         do {
-            RtlZeroMemory(&Buffer, sizeof(Buffer));
-            Status = ZwQueryDirectoryObject(DirectoryHandle, DirInfo, sizeof(Buffer), TRUE, FALSE, &QueryContext, NULL);
-            if (NT_SUCCESS(Status)) {
-               // A directory entry has been retrieved. Check whether it represents
-               // a Driver Object.
-               if (RtlCompareUnicodeString(&DirInfo->TypeName, &DriverTypeStr, TRUE) == 0) {
-                  UNICODE_STRING FullDriverName;
+			// Attempt to list contents of the directory, filter everything except drivers out,
+			// and add the information to the array.
+			do {
+				memset(&Buffer, 0, sizeof(Buffer));
+				Status = ZwQueryDirectoryObject(DirectoryHandle, DirInfo, sizeof(Buffer), TRUE, FALSE, &QueryContext, NULL);
+				if (NT_SUCCESS(Status)) {
+					// A directory entry has been retrieved. Check whether it represents
+					// a Driver Object.
+					if (RtlCompareUnicodeString(&DirInfo->TypeName, &DriverTypeStr, TRUE) == 0) {
+						UNICODE_STRING FullDriverName;
 
-                  // Format the full name of the driver.
-                  Status = _AppendDriverNameToDirectory(&FullDriverName, Directory, &DirInfo->Name);
-                  if (NT_SUCCESS(Status)) {
-                     PDRIVER_OBJECT DriverPtr = NULL;
+						// Format the full name of the driver.
+						Status = _AppendDriverNameToDirectory(&FullDriverName, Directory, &DirInfo->Name);
+						if (NT_SUCCESS(Status)) {
+							PDRIVER_OBJECT DriverPtr = NULL;
 
-                     // Get the address of corresponding DIRVER_OBJECT structure and
-                     // increase its reference count by one. ObReferenceObjectByName will
-                     // do the job.
-                     Status = ObReferenceObjectByName(&FullDriverName, OBJ_CASE_INSENSITIVE, NULL, GENERIC_READ, *IoDriverObjectType, KernelMode, NULL, (PVOID *)&DriverPtr);
-                     if (NT_SUCCESS(Status)) {
-                        Status = DymArrayPushBack(DriverDymArray, DriverPtr);
-                        if (!NT_SUCCESS(Status))
-                           ObDereferenceObject(DriverPtr);
-                     }
+							// Get the address of corresponding DIRVER_OBJECT structure and
+							// increase its reference count by one. ObReferenceObjectByName will
+							// do the job.
+							Status = ObReferenceObjectByName(&FullDriverName, OBJ_CASE_INSENSITIVE, NULL, GENERIC_READ, *IoDriverObjectType, KernelMode, NULL, (PVOID *)&DriverPtr);
+							if (NT_SUCCESS(Status)) {
+								Status = DymArrayPushBack(DriverDymArray, DriverPtr);
+								if (!NT_SUCCESS(Status))
+									ObDereferenceObject(DriverPtr);
+							}
 
-                     HeapMemoryFree(FullDriverName.Buffer);
-                  }
-               }
-            }
-         } while (NT_SUCCESS(Status));
+							HeapMemoryFree(FullDriverName.Buffer);
+						}
+					}
+				}
+			} while (NT_SUCCESS(Status));
 
-         if (Status == STATUS_NO_MORE_ENTRIES) {
-            Status = DymArrayToStaticArrayAlloc(DriverDymArray, PagedPool, (PVOID *)&TmpDriverArray);
-            if (NT_SUCCESS(Status)) {
-               // The object directory has been successfully traversed.
-               // Report success and return the array and number of its elements
-               // in the second and the third parameters.
-               *DriverCount = DymArrayLength(DriverDymArray);            
-               *DriverArray = TmpDriverArray;
-            }
-         }
+			if (Status == STATUS_NO_MORE_ENTRIES) {
+				Status = DymArrayToStaticArrayAlloc(DriverDymArray, PagedPool, (PVOID *)&TmpDriverArray);
+				if (NT_SUCCESS(Status)) {
+					// The object directory has been successfully traversed.
+					// Report success and return the array and number of its elements
+					// in the second and the third parameters.
+					*DriverCount = DymArrayLength(DriverDymArray);            
+					*DriverArray = TmpDriverArray;
+				}
+			}
          
-         if (!NT_SUCCESS(Status)) {
-            ULONG i = 0;
+			if (!NT_SUCCESS(Status)) {
+				ULONG i = 0;
 
-            for (i = 0; i < DymArrayLength(DriverDymArray); ++i)
-               ObDereferenceObject(DymArrayItem(DriverDymArray, i));
-         }
+				for (i = 0; i < DymArrayLength(DriverDymArray); ++i)
+					ObDereferenceObject(DymArrayItem(DriverDymArray, i));
+			}
 
-         ZwClose(DirectoryHandle);
-      } else {
-         DEBUG_ERROR("ERROR: ZwOpenDirectoryObject: 0x%x", Status);
-      }
+			ZwClose(DirectoryHandle);
+		}
    
-      DymArrayDestroy(DriverDymArray);
-   }
+		DymArrayDestroy(DriverDymArray);
+	}
 
-   DEBUG_EXIT_FUNCTION("0x%x, *DriverArray=0x%p, *DriverCount=%u", Status, *DriverArray, *DriverCount);
-   return Status;
+	DEBUG_EXIT_FUNCTION("0x%x, *DriverArray=0x%p, *DriverCount=%u", Status, *DriverArray, *DriverCount);
+	return Status;
 }
 
 
@@ -411,7 +407,6 @@ NTSTATUS _GetLowerUpperDevices(PDEVICE_OBJECT DeviceObject, BOOLEAN Upper, PDEVI
 {
    PUTILS_DYM_ARRAY DymDeviceArray = NULL;
    PDEVICE_OBJECT *TmpDeviceArray = NULL;
-   SIZE_T TmpArrayLength = 0;
    NTSTATUS Status = STATUS_UNSUCCESSFUL;
    PDEVICE_OBJECT TmpDeviceObject = NULL;
    PDEVICE_OBJECT OldTmpDeviceObject = NULL;
@@ -582,6 +577,7 @@ static VOID _QueryDeviceRelationsWorker(PVOID Context)
 	return;
 }
 
+
 NTSTATUS _QueryDeviceRelations(PDEVICE_OBJECT DeviceObject, DEVICE_RELATION_TYPE RelationType, PDEVICE_OBJECT **Relations, PULONG Count)
 {
 	WORK_QUEUE_ITEM workItem;
@@ -608,6 +604,7 @@ NTSTATUS _QueryDeviceRelations(PDEVICE_OBJECT DeviceObject, DEVICE_RELATION_TYPE
 	DEBUG_EXIT_FUNCTION("0x%x, *Relations=0x%p, *Count=%u", status, *Relations, *Count);
 	return status;
 }
+
 
 NTSTATUS UtilsQueryDeviceId(PDEVICE_OBJECT DeviceObject, BUS_QUERY_ID_TYPE IdType, PWCHAR *Id)
 {
@@ -642,6 +639,7 @@ NTSTATUS UtilsQueryDeviceId(PDEVICE_OBJECT DeviceObject, BUS_QUERY_ID_TYPE IdTyp
 	DEBUG_EXIT_FUNCTION("0x%x; *Id=\"%S\"", status, *Id);
 	return status;
 }
+
 
 NTSTATUS UtilsQueryDeviceCapabilities(PDEVICE_OBJECT DeviceObject, PDEVICE_CAPABILITIES Capabilities)
 {

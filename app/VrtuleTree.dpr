@@ -10,7 +10,8 @@ uses
   LogSettings in 'LogSettings.pas',
   Snapshot in 'Snapshot.pas',
   Logger in 'Logger.pas',
-  TextLogger in 'TextLogger.pas';
+  TextLogger in 'TextLogger.pas',
+  AboutForm in 'AboutForm.pas' {AboutBox};
 
 {$R *.res}
 
@@ -26,7 +27,8 @@ If Ret Then
     begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TForm1, Form1);
-    Application.Run;
+  Application.CreateForm(TAboutBox, AboutBox);
+  Application.Run;
     DriverUnload;
     end
   Else ErrorDialog('Failed to load the driver');

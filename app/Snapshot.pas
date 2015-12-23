@@ -34,6 +34,7 @@ Type
 
       Function GetDriverByAddress(AAddress:Pointer):PDriverSnapshot;
       Function GetDeviceByAddress(AAddress:Pointer):PDeviceSnapshot;
+      Class Procedure FillDeviceCapabilities(Var ADC:DEVICE_CAPABILITIES; Var AResult:TDeviceCapabilities);
 
       Property DriverRecords [Index:Integer] : PDriverSnapshot Read GetDriverRecord;
       Property DriverRecordsCount : Integer Read GetDriverRecordsCount;
@@ -156,6 +157,12 @@ Result.DeviceId := '';
 Result.InstanceId := '';
 SetLength(Result.HardwareIds, 0);
 SetLength(Result.CompatibleIds, 0);
+Result.DeviceNode := ADeviceInfo.DeviceNode;
+Result.Child := ADeviceInfo.Child;
+Result.Parent := ADeviceInfo.Parent;
+Result.Sibling := ADeviceInfo.Sibling;
+Result.ExtensionFlags := ADeviceInfo.ExtensionFlags;
+Result.PowerFlags := ADeviceInfo.PowerFlags;
 AdvPnP := ADeviceInfo.AdvancedPnPInfo;
 If Assigned(AdvPnP) Then
   begin
@@ -171,7 +178,6 @@ If Assigned(AdvPnP) Then
       Inc(pDevice);
       end;
     end;
-
 
   If Assigned(AdvPnP.EjectRelations) Then
     begin
@@ -203,6 +209,8 @@ If Assigned(AdvPnP) Then
     Inc(tmp, StrLen(tmp) + 1);
     Until tmp^ = #0;
     end;
+
+  FillDeviceCapabilities(AdvPnp.DeviceCapabilities, Result.Capabilities);
   end;
 end;
 
@@ -336,6 +344,35 @@ Procedure TVTreeSnapshot.FreeVpbRecord(ARecord:PVpbSnapshot);
 begin
 Dispose(ARecord);
 end;
+
+Class Procedure TVTreeSnapshot.FillDeviceCapabilities(Var ADC:DEVICE_CAPABILITIES; Var AResult:TDeviceCapabilities);
+begin
+AResult.Version := ADC.Version;
+AResult.UINumber := ADC.UINumber;
+AResult.Address := ADC.Address;
+AResult.D1Latency := ADC.D1Latency;
+AResult.D2Latency := ADC.D2Latency;
+AResult.D3Latency := ADC.D3Latency;
+AResult.DeviceD1 := (ADC.Flags And DEVCAP_DEVICE_D1) <> 0;
+AResult.DeviceD2 := (ADC.Flags And DEVCAP_DEVICE_D2) <> 0;
+AResult.LockSupported := (ADC.Flags And DEVCAP_LOCK_SUPPORTED) <> 0;
+AResult.EjectSupported := (ADC.Flags And DEVCAP_EJECT_SUPPORTED) <> 0;
+AResult.Removable := (ADC.Flags And DEVCAP_REMOVABLE) <> 0;
+AResult.DockDevice := (ADC.Flags And DEVCAP_DOCK_DEVICE) <> 0;
+AResult.UniqueId := (ADC.Flags And DEVCAP_UNIQUE_ID) <> 0;
+AResult.SilentInstall := (ADC.Flags And DEVCAP_SILENT_INSTALL) <> 0;
+AResult.RawDeviceOK := (ADC.Flags And DEVCAP_RAW_DEVICE_OK) <> 0;
+AResult.SurpriseRemovalOK := (ADC.Flags And DEVCAP_SURPRISE_REMOVAL_OK) <> 0;
+AResult.WakeFromD0 := (ADC.Flags And DEVCAP_WAKE_FROM_D0) <> 0;
+AResult.WakeFromD1 := (ADC.Flags And DEVCAP_WAKE_FROM_D1) <> 0;
+AResult.WakeFromD2 := (ADC.Flags And DEVCAP_WAKE_FROM_D2) <> 0;
+AResult.wakeFromD3 := (ADC.Flags And DEVCAP_WAKE_FROM_D3) <> 0;
+AResult.HardwareDisabled := (ADC.Flags And DEVCAP_HARDWARE_DISABLED) <> 0;
+AResult.NonDynamic := (ADC.Flags And DEVCAP_NON_DYNAMIC) <> 0;
+AResult.WarmEjectSupported := (ADC.Flags And DEVCAP_WARM_EJECT_SUPPORTED) <> 0;
+AResult.NoDisplayInUI := (ADC.Flags And DEVCAP_NO_DISPLAY_IN_UI) <> 0;
+end;
+
 
 
 End.

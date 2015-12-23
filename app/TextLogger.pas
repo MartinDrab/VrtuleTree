@@ -29,7 +29,7 @@ end;
 
 Function TSnapshotTextLogger.GenerateVTHeader(ALog:TStrings):Boolean;
 begin
-ALog.Add('VrtuleTree v1.0');
+ALog.Add('VrtuleTree v1.5');
 ALog.Add('Created by Martin Drab, 2013');
 ALog.Add(Format('Run from: %s', [ParamStr(0)]));
 ALog.Add('');
@@ -52,6 +52,50 @@ ALog.Add('');
 Result := True;
 end;
 
+Function DeviceCapabilitiesFlagsToStr(Var ADC:TDeviceCapabilities):WideString;
+begin
+Result := '';
+If ADC.DeviceD1 Then
+  Result := Result + 'DeviceD1, ';
+If ADC.DeviceD2 Then
+  Result := Result + 'DeviceD2, ';
+If ADC.LockSupported Then
+  Result := Result + 'LockSupported, ';
+If ADC.EjectSupported Then
+  Result := Result + 'EjectSupported, ';
+If ADC.Removable Then
+  Result := Result + 'Removable, ';
+If ADC.DockDevice Then
+  Result := Result + 'DockDevice, ';
+If ADC.UniqueId Then
+  Result := Result + 'UniqueId, ';
+If ADC.SilentInstall Then
+  Result := Result + 'SilentInstall, ';
+If ADC.RawDeviceOK Then
+  Result := Result + 'RawDeviceOK, ';
+If ADC.SurpriseRemovalOK Then
+  Result := Result + 'SurpriseRemovalOK, ';
+If ADC.WakeFromD0 Then
+  Result := Result + 'WakeFromD0, ';
+If ADC.WakeFromD1 Then
+  Result := Result + 'WakeFromD1, ';
+If ADC.WakeFromD2 Then
+  Result := Result + 'WakeFromD2, ';
+If ADC.WakeFromD3 Then
+  Result := Result + 'WakeFromD3, ';
+If ADC.HardwareDisabled Then
+  Result := Result + 'HardwareDisabled, ';
+If ADC.NonDynamic Then
+  Result := Result + 'NonDynamic, ';
+If ADC.WarmEjectSupported Then
+  Result := Result + 'WarmEjectSupported, ';
+If ADC.NoDisplayInUI Then
+  Result := Result + 'NoDisplayInUI, ';
+
+If Result <> '' Then
+  Delete(Result, Length(Result) - 1, 2);
+end;
+
 Function TSnapshotTextLogger.GenerateDeviceRecordLog(ARecord:PDeviceSnapshot; ALog:TStrings):Boolean;
 Var
   I : Integer;
@@ -68,6 +112,13 @@ If DL.IncludeFlags Then
   If DL.IncludeFlagsStr Then
     ALog.Add(Format('      Flags:           0x%x (%s)', [ARecord.Flags, DeviceFlagsToStr(ARecord.Flags)]))
   Else ALog.Add(Format('      Flags:           0x%x', [ARecord.Flags]));
+  end;
+
+If DL.IncludeExtensionFlags Then
+  begin
+  If DL.IncludeExtensionFlagsStr Then
+    ALog.Add(Format('      Extension flags: 0x%x (%s)', [ARecord.ExtensionFlags, DeviceExtensionFlagsToStr(ARecord.ExtensionFlags)]))
+  Else ALog.Add(Format('      Extension flags: 0x%x', [ARecord.ExtensionFlags]));
   end;
 
 If DL.IncludeCharacteristics Then
@@ -101,6 +152,42 @@ If DL.IncludePnPInformation Then
       If DL.IncludeClassGuid Then
         ALog.Add(Format('      Class:           %s (%s)', [ARecord.ClassName, ARecord.ClassGuid]))
       Else ALog.Add(Format('      Class:           %s', [ARecord.ClassName]));
+      end;
+
+    If DL.IncludeDeviceId Then
+      ALog.Add(Format('      Device ID:       %s', [ARecord.DeviceId]));
+
+    If DL.IncludeInstanceId Then
+      ALog.Add(Format('      Instance ID:     %s', [ARecord.InstanceId]));
+
+    If DL.IncludeHardwareIDs Then
+      ALog.Add(Format('      Hardware IDs:    (%s)', [DeviceIDListToStr(ARecord.HardwareIds)]));
+
+    If DL.IncludeCompatibleIDs Then
+      ALog.Add(Format('      Compatible IDs:  (%s)', [DeviceIDListToStr(ARecord.CompatibleIds)]));
+
+    If DL.IncludeRemovalRelations Then
+      ALog.Add(Format('      Removal relations: (%s)', [DeviceRelationsToStr(ARecord.RemovalRelations)]));
+
+    If DL.IncludeEjectRelations Then
+      ALog.Add(Format('      Eject relations:   (%s)', [DeviceRelationsToStr(ARecord.EjectRelations)]));
+
+    If DL.IncludeDeviceCapabilities Then
+      begin
+      ALog.Add(       '      Device capabilities: (');
+      ALog.Add(Format('        Flags:         (%s)', [DeviceCapabilitiesFlagsToStr(ARecord.Capabilities)]));
+      ALog.Add(Format('        Address:       %u', [ARecord.Capabilities.Address]));
+      ALog.Add(Format('        UI number:     %u', [ARecord.Capabilities.UINumber]));
+      If ARecord.Capabilities.D1Latency <> 0 Then
+        ALog.Add(Format('        D1 latency:    %u ms', [ARecord.Capabilities.D1Latency Div 10]));
+
+      If ARecord.Capabilities.D2Latency <> 0 Then
+        ALog.Add(Format('        D2 latency:    %u ms', [ARecord.Capabilities.D2Latency Div 10]));
+
+      If ARecord.Capabilities.D3Latency <> 0 Then
+        ALog.Add(Format('        D3 latency:    %u ms', [ARecord.Capabilities.D3Latency Div 10]));
+
+      ALog.Add('      )');
       end;
     end;
   end;
@@ -181,7 +268,7 @@ If DL.IncludeFlags Then
 If DL.IncludeMajorFunctions Then
   begin
   ALog.Add('  MajorFunction');
-  For I := 0 To 28 Do
+  For I := 0 To 27 Do
     ALog.Add(Format('    %s: 0x%p', [IrpMajorToStr(I), ARecord.MajorFunction[I]]));
   end;
 
@@ -192,4 +279,6 @@ Result := True;
 end;
 
 
+
 End.
+

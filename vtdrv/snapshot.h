@@ -3,6 +3,10 @@
 #define __VRTULETREE_SNAPSHOT_H_
 
 #include <ntifs.h>
+#include "ioctls.h"
+
+
+
 
 typedef struct _SNAPSHOT_DEVICE_RELATIONS_INFO {
 	ULONG Count;
@@ -15,9 +19,9 @@ typedef struct _SNAPSHOT_DRIVER_INFO {
 	PVOID ImageBase;
 	ULONG32 ImageSize;
 	ULONG32 Flags;
-	PVOID StartIo;
-	PVOID DriverEntry;
-	PVOID DriverUnload;
+	PDRIVER_STARTIO StartIo;
+	PDRIVER_INITIALIZE DriverEntry;
+	PDRIVER_UNLOAD DriverUnload;
 	ULONG_PTR NameOffset;
 	PVOID ObjectAddress;
 	ULONG_PTR NumberOfDevices;
@@ -69,11 +73,17 @@ typedef struct _SNAPSHOT_DEVICE_INFO {
 	PSNAPSHOT_VPB_INFO VpbInfo;
 	PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO AdvancedPnPInfo;
 	PSECURITY_DESCRIPTOR Security;
+	PVOID DeviceNode;
+	PVOID Parent;
+	PVOID Child;
+	PVOID Sibling;
+	ULONG ExtensionFlags;
+	ULONG PowerFlags;
 } SNAPSHOT_DEVICE_INFO, *PSNAPSHOT_DEVICE_INFO;
 
 typedef struct _SNAPSHOT_DRIVERLIST {
    SIZE_T Size;
-   ULONG_PTR NumberOfDrivers;
+   SIZE_T NumberOfDrivers;
    ULONG_PTR DriversOffset;
 } SNAPSHOT_DRIVERLIST, *PSNAPSHOT_DRIVERLIST;
 
@@ -82,9 +92,9 @@ typedef struct _VRTULETREE_KERNEL_SNAPSHOT {
 }  VRTULETREE_KERNEL_SNAPSHOT, *PVRTULETREE_KERNEL_SNAPSHOT;
 
 
-NTSTATUS SnapshotCreate(PVRTULETREE_KERNEL_SNAPSHOT *Snapshot);
-VOID SnapshotFree(PVRTULETREE_KERNEL_SNAPSHOT Snapshot);
-NTSTATUS SnapshotToUser(PVRTULETREE_KERNEL_SNAPSHOT Snapshot, PVOID *Address);
+NTSTATUS SnapshotCreate(_In_ ULONG SnapshotFlags, _Out_ PVRTULETREE_KERNEL_SNAPSHOT *Snapshot);
+VOID SnapshotFree(_Inout_ PVRTULETREE_KERNEL_SNAPSHOT Snapshot);
+NTSTATUS SnapshotToUser(_In_ PVRTULETREE_KERNEL_SNAPSHOT Snapshot, _Out_ PVOID *Address);
 
 
 

@@ -1,9 +1,11 @@
-object Form1: TForm1
+object AboutBox: TAboutBox
   Left = 0
   Top = 0
-  Caption = 'VrtuleTree'
-  ClientHeight = 553
-  ClientWidth = 692
+  AutoSize = True
+  BorderIcons = [biSystemMenu]
+  Caption = 'About VrtuleTree'
+  ClientHeight = 100
+  ClientWidth = 313
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -865,1409 +867,209 @@ object Form1: TForm1
     FFFFFCFFE00004FFFFC0FFFFFFFFFCFFFF0004FFFFC0FFFFFFFFCFCFFF8007FF
     FFC0FFFFFFFFCFCFFFFC07FFFFC0FFFFFFFFF3FCFFF70FFFFFC0FFFFFFFFF3FC
     FFFFFBFFFFC0FFFFFFFFFFFCCF0F3CFFFFC0FFFFFFFFFFFCCF0F3CFFFFC0}
-  Menu = MainMenu1
   OldCreateOrder = False
-  OnClose = FormClose
-  OnCreate = FormCreate
+  Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 13
-  object DriverDeviceTreeView: TTreeView
+  object AboutImage: TImage
     Left = 0
     Top = 0
-    Width = 230
-    Height = 553
+    Width = 89
+    Height = 100
     Align = alLeft
-    Indent = 19
-    PopupMenu = DriverDeviceTreePopupMenu
-    ReadOnly = True
-    SortType = stText
-    TabOrder = 0
-    OnChange = DriverDeviceTreeViewChange
+    Picture.Data = {
+      0A544A504547496D616765B0120000FFD8FFE000104A46494600010101004800
+      480000FFE100EC45786966000049492A000800000006001A0105000100000056
+      0000001B010500010000005E0000002801030001000000020000001302030001
+      0000000200000014020500060000006600000069870400010000009600000000
+      000000480000000100000048000000010000000000000001000000FF00000001
+      0000008000000001000000FF000000010000008000000001000000FF00000001
+      000000060000900700040000003032323001910700040000000102030000A007
+      00040000003031303001A00300010000000100000002A00400010000005A0000
+      0003A00400010000006000000000000000FFDB00430001010101010101010101
+      0101010101010101010101010101010101010101010101010101010101010101
+      01010101010101010101010101010101010101010101FFDB0043010101010101
+      0101010101010101010101010101010101010101010101010101010101010101
+      010101010101010101010101010101010101010101010101010101FFC0001108
+      0060005A03012200021101031101FFC4001C0001000203010101000000000000
+      00000000070A05060908040BFFC4002B10000104010402010304030100000000
+      00020103040506000711120821130922311415324123518161FFC4001B010002
+      03010101000000000000000000000008030406070905FFC40028110002020104
+      0202020203010000000000020301040500061112071321220814233115164134
+      FFDA000C03010002110311003F00FCFF00F4D34D1A34D34D3468D34D6671EA1B
+      3CA2F2A71DA68E52AD2EA7C6AE82C0A2AAB92653A2D368BC22F02845C9171C08
+      A2AAFA4D7643687E8EF95E4C906C771B73AAA92B5E16DD7A063501EB2B2512E1
+      49A4912D5888DAA27612713E4EA5C2F454D6BF6AEC4DD7BD0DC3B6F10EC80566
+      2D766C7B115EB5736C4900B5F61AA5C148891758922EB1CF5E38E767B4BC7BBC
+      37C93E36C616C6497558B5DAB3068455AC6D89201758B0D52E0A4624BA8C91F5
+      8E7AFCC73C56D4B5B71B0FBC9BB925B8BB6FB6B97E5DF2382DFEAEAA9663958D
+      11120A7EA2D5C6DBAD8E88AA9C93D28113FBD5A7F67FE9A9E27ED47E8E716DF3
+      19EDEC5EAE0DBEE13C99102BC29FCDAA475B6A84179FB815DAF7CC178E1C55F7
+      ADAFCCDF27716F0FB6426D95143A58B9A5D4576876DF178B1A344606C4DB56D6
+      D1C81111916EA691B2492E88360DB8E8B1100855E520ECCAFC796E13156F3BBE
+      F72D4C4E3E8573B366BE297371FD42227D3FB563D0917B0A614B0522D41B4844
+      4A79D7665FE3ABB058BB99DDFDB9A9E22863EB9D9B35F14B9BB63A0447F145AB
+      1E848BD8522A502916A18C301029ED1CD49F76369730D95CB1EC1B3D66B60E57
+      0E2C7936B4F02D22DABD4EE491F91B8366F41376331602DF5376283CE934261D
+      D514913519EB2F905FDCE55796D92645652EDEF6F2C255A5B59CE78DF973A7CD
+      78DF9325F74D5488DD74C897DF028A822882888988D2E36A6B1597CD306AEA4B
+      4FF596F60B5E28ED3EB873001606DE9C7720580C973D462388D2DD6CAB159B05
+      496E55497326B2EC305AF04769F5439800B036F4E3D84000325CF5188E234D34
+      D3506ABE9A9D2CFC78DC885B4B8CEF5C1A876EB04C8427A48B0AC07243B4526B
+      EC24D7BCDDBB002A71D870E3FC8CCB4426144C44C80BD6A0BD7743E979BCD8F5
+      BE0D7DB0D90FC2F58419D6177550AC55B9112CE96D5180B086CC77D09B548AF8
+      1BCEC7EA68E0C970FAA7DFCEDF606DEC5EEACECE072574F1ECBF4EC0632D8F59
+      15E4D72B62018B2911683562E5FAFB011148C0189F5E773E3DDB98ADDBB8236F
+      E4EF1E34F234EC2F17707A90AF2812B6201AB29186ADCB072FD7060444430050
+      7D75C2FD35DFFF0025FE9818B67473733D817E1E1D90C827254EC2A6BA638BD8
+      BAA3D8DCA573A9B948FBC7CAAC4523ACEC49F084214515E38DD78D5BEF4396BB
+      84CEDABCD0AFDB9CDC01621D0D84D8CFBCF388DB071E7C561D86EB0F2AA103E2
+      FF00C7D57B112222EA6DD5E36DDBB46DC57BF8B7D9AED674A991A0A6DAA56F9F
+      90803584929A51F32878ADB13CF51218829B1BB7C63BC3675D8AD91C558B35DC
+      C95D3C963D4EB746E7CFD616C05F75B4A3FB43C16D89E7A890C414FB47E9B1B0
+      6F67B6DB95BC92E1B8F57ED1C2A262A489BECC3B906432DF179D45202433AAA6
+      892E49755ECCB92629971D8556C47B417E8FC71AF78909D605085553EE5154E3
+      844FF48BC2FE384FFA9AF97C0CF1762F8FFE3263BB7D90D736192E4F1A5E45B8
+      8D1283A677D7ACB4DBD109D1FB492AA0371AB59E154056329A2F63255D64286C
+      B04DC1768594764804AED5C6DA292CBAF78D7E1711057EF2404EAE7B4E0C0BB2
+      A71C23EBE1ADABFEA7B1B1D89B098AF96B41396C9418481FECDDE0E12D29189E
+      F51109AC6333F12A998FFBCFA31E06DA4BDB1E36A983B4A1AD9C383CEE46083A
+      19B72100448717F72DA2814563828FAC07C471053A9DF76F76311D90DB1C9F74
+      7359E1068719AE298EA2A88C89B2CC9198159080BDBF3EC6638D458ED0A76537
+      14C945B0321A69F929E4466DE4C6E85D6E2E6329C46E43A71B1EA3074D6063D4
+      6D19242AE88D1128A1A36A8E4B908887264938E9708A223639FA936C4677E42E
+      CB5454E132DF62DF04B2939396386F1847CAC561247721908FF8D2C218893956
+      AF72D91BB21AE40DD05D554ECAB6C29E7CBABB58726BEC6048722CD853193624
+      C690C92838CBCCB8226D98122A289222FF007F854D2E3F92D9FDC0CCC51C0925
+      D5B6D2D41690F19994E5AFF1C38DA43F589A3CC2975CFEC3247666085AA9054F
+      F27F37B8BFCDD2DBE696D6DB00A5DBAD6173335F317FAFF3130862062684CFA5
+      758FEC3325666245AA91F8B4D34D2B7A54B4D34D3468D35B2E2197E4581E4557
+      95E2969269EF69E5372E0CE8AE101838D922F4344544719711141E64F9071B22
+      024545D6B5A6A4535A86ADC961A9CA31629AB29062D805040606330424251042
+      513131311313CEA44B9B5DAB7A1869724C5AA6A88818B6014101818CC1018944
+      1090CC4C4C44C4F3AB61F81DE48615E57E1BFA39D6EE633BAB8DB0DB795630BF
+      03B1A6B43C8B77B42AEAB6F3D5F2D4515F8C64F3D5EFA934E1187C2F3BD182C2
+      92949A9B16C24CA5111EAE132C0A8927DDC12A0910A7F2E3824E13F1FDF3466D
+      AEDD2CDB66F36A5DC0DBFBA93459251C907E349608BE27DB454F9A14D6794093
+      0A537CB5223B9C89B64A9E97854B7CF849E6DE11E5BE0826851687716923B11B
+      35C29E902AFB4F74145BAA4EDD5C9B47309089A7847E584EF68B2844C00DD793
+      C33E5E0DD09AFB7F3AF05EE3A8B914B19D0033485C47F22E3AC0C5F580F2E447
+      1EE8897AA38F68ADF0F0B799FF00DA115F6EE7ED02F71555F54B582A10CDA171
+      1CB02642222FAC063DC98E3DD112E58CC7B215EA83CDAE6A978F81973AAA0A89
+      89AA1270A88ABD0D1139E3FEAF3A8EEC1E6A46455375263904988730DB561053
+      86A40B6AE30E11F6246CC9CF9191E538307510B8224291EFE9419357FF00314B
+      834709780404E497B2AAFA5044FBBFAF4ABC7B454856C72CACB293306B094E3D
+      710C757FAA0B4F3A03F71B09EB96FF009076F6A44DF644EABA64641CCAECB2A3
+      88802573F58F912E4484BE2389F981E0BFAE67E2678D35D5819671EFBA89EB09
+      250B085611040C99021328E246279889898FFB3F5FEE75314AA91BB80562D1B0
+      115D693A038E813C849CFCA2F8A088B6AABFC455489110557855E13931E67F80
+      787EF9313B2CC492262FB9D1D9528F671C012B32156C55460DF30CA19A99AA28
+      3166D27CEC2AA7CC2FB3F687A8B33BB1B18AF442992A30A724CB91DF36BA3A82
+      BCAAA010A1A7088860A8A85E979454454C7ECE0BB7372F55CA9C4E2073C21B8E
+      B85F8FBBAA912F28A8BD915579E7F09CEB23B8B6B61F75E3AC62F348459AEFE6
+      7A1AE7D886447D1E8689775B97CF20D02128FB44F2245138FDC9B1B05BB7076E
+      86785366BB48A61075F8620BE61762B588741ADABE7916AFA144F23313045135
+      31DC4DB5CD76AB259B89E7545368AE60B8604D496D51992D89288C98521396A5
+      46738E41D6888551539E17D6B44D5D1B7B3C36DA4DF6C79CA5CFA94671A34F05
+      75E43418B7748F98288C9AF9C9CB9CB66A26AC3C8E46795101E68C09535523F2
+      1B65AE7C7DDDFCCB6A6EA58D8BD8CD823706D418723376D5329A0955B602C38A
+      4AD13F15D047DA13741A920F340EB82086A897947C4B93F1E353742C0647017A
+      C1A29DC1FABEBBBA4B42ADD571110C25C1CADCBE56D859F30B28E9AF3C3CADE2
+      2C8F8E1EAB8AB6193DBD7AC1229DD8FA59AEEEA4D0AB795C4443256272B72BB2
+      9B0B2E6147FC7A8574D34D721D71CD34D34D1A34D491B4DBAF9B6CAE7943B898
+      05BC8A7C868263525971A70C589AC098AC8AE9ED010A498131B42664B07C8901
+      2AA70482491BEA52D98DA2CBF7CB71F18DB4C2A03D36E723B16231380D91B15B
+      07B8ACEB59A69F6B30E047EEFBCE1908F0083CF624D5EC60E40F234431516272
+      656903422A768B3FB72C18AFE890FBC37D9D7A48FCC4F1ABD8C1C81E468862A2
+      C4E4CADA068455928B3FB72C18AFE890E0A1BEDEBD2627989F9D5B9FC7CF24A3
+      7993B011332C52BED31C9CC5BAE3B9CD5CC8FD1A8B7706042932D8A69C2EB8DC
+      FAB97FAE175A909F0BC0D758F21B6DE574472B9C502E1D8BC69A22ADA9CF6E31
+      2A22273DE3BE63CA220A2F0ADAAF3ED39F4BE951164DD84D9BC57C77DA9C5F6A
+      70E6C5BAFA2862B613D4105EB8BA7C45CB3B798A889F2489AFA297B45E8CA34D
+      0F02089A8F3CA9CAEBB1FC2A13965299890DA9AFDA4D90F388CB71E1D74291F3
+      3E64483C8A148144445F6BC20FB4D7AA989B393C36C5AB1B9AC57666118E5B73
+      16C0569515B9EA6DE26380EAAE2164430225204C88182888F5D36CE532B80F1E
+      D746E7B359B944E3D567356D700B59DC98036F3012212281815778181295CB04
+      620A635E39CDB3BA7C629EDB24C8AC5AADA5AA8EECCB19D24D45A6DB04F420A8
+      8A44EB87C34D320046E384800844A89ACAF875BFBB49BB9733D711CAA1C8BF6A
+      427C94339A7AB6D86281208C9661CC161C94C98F1CBB1BB08AAF5341244E781B
+      E4F793375BD578FD2D44891076F6A6639FB5C0F6CBB6CE36A823656682BCBAA4
+      A3DE2C773908E0A24828EA92EBCC98F6477D89DC41C8319B7B0A2BBAC90DCA81
+      675929E873233ED18981B6F32406888428A42AAA0689D4C4855534A466BF225F
+      537308E231F5EFEDFAE449B4C6131772F4C94431D51DCC8216111C2A1AA643A3
+      922F5C10F54FB717E4EDB46E7F4E1B1F56F6D7AE528B52CF62AE5F9838F658A4
+      E8390AE01D784C316C87C72472BEE3217E98AF0B8C2A122AA20A210FA425FC22
+      A22222FE13F0A5EFFB5FFCAC57D68F198959E4060D91C6651A7324C041B94482
+      89F23B5162F320444888A448DC9405554F48289FD6BD0DE197D5A18B3954BB6D
+      E4A2C5AC92E8B706B77518546A0BD2B9406032D8A9F644F9B9105B78DC474738
+      298D342A521307F5AEA5896D03623716A9F8D615B25BC82902CA0BA1262496DF
+      0896519C6A53446DBAD98211028128922F28BAD2792B7660B7FF008A32B91C2D
+      A1B0546DE2ECD8A8D885DCC7B3F696A287239921E41C622D1925307B4830A20B
+      8FA1E4CDDF83F20F8AF2B7F096A2C4D1B58BB562A38602ED06C5A528A1EA9992
+      0E16F3086049A191DE56C388298E03E9A69A4C349769A69A68D1ACFE2D8B6439
+      B643518A6295136F721BD9AC57555557B24FCA992E49A36D34D80FE13B1726E1
+      A8B6D8211B84202A496D7F02FC30A6F1476F4265FC68365BBF95C76A565B78D8
+      83BFB4B2F001338B54BE48A610A0755596F80894F984E3A5FE1065B0ADFF008C
+      3E53AF8B736CF28C5B6CB14CA7702736E448395E54FCF90B4101C44471AA7AF8
+      AE30CB321FFB91F96646E9070D8A802922CF395FD58FCBDC8D5D08391E338BB0
+      E29A88D26350D1F690938440952CA438BD53D22922AFE3FD26BBAF89F7378EF6
+      194EE3CF16432DB9084D746952C77B1189517226DF7DB6D551DE78F23EC5C98A
+      1252205266731DD7C4FB9BC77B10E771E78B2196DC7306BA34E963E1B5F14A2F
+      A933DB6DB594CBCE1E47DAB93142A6400A4D873168ECEF3FC3B6EB1E9D96E719
+      0D4E318E55B0EC89D696F31A8AC362D029756FE62137DF73D2351D81379E3500
+      69B22541D55D7CF9F3D64F9317AB89EDFB33E936BE99C723B4FCA2562CF2B56D
+      C554993180544895EE1A0BAC4125270905A392BDC51B0F126E7EFA6EF6F34C09
+      9B9DB81926604CB84EC78B6960E1574570B94EF1AB19F8A030E20AF447423A3B
+      D3ED5354F5A89F573C9FE77C9EF7A8784C3556E1704CFF00D7EC689E43231131
+      30B792BF8EB57898E490A361367E5AE21FE38BFE4FF3E6577BD23C1616AB7098
+      16FC5C96301991C90C4C48A9C6A8F5D5AD1C7255D26C26CCCFB5E413EBD34D34
+      D2FDA5EF4D6F33B72F3CB4C361EDF5A6516F65875758059D651584C76642AC98
+      0D131F2570482716109B46A06D4756DA3444E4394E75A369A956E72A182A6B17
+      0E5CA9B0B32086AA662656C819883099889902E479889E3988D4AB73950C1535
+      8B872E54D85990435533132B640CC4184CC44C81723CC44F1CC469A69A6A2D45
+      A69A69A3469A69A68D1A69A69A3469A69A68D1A69A69A3469A69A68D1AFFD9}
+    Stretch = True
+    ExplicitLeft = 96
+    ExplicitTop = 72
+    ExplicitHeight = 65
   end
-  object PageControl1: TPageControl
-    Left = 230
+  object AboutListView: TListView
+    Left = 89
     Top = 0
-    Width = 462
-    Height = 553
-    ActivePage = DeviceTabSheet
+    Width = 224
+    Height = 100
     Align = alClient
-    TabOrder = 1
-    ExplicitLeft = 222
-    ExplicitTop = -192
-    object DeviceTabSheet: TTabSheet
-      Caption = 'Device'
-      object DeviceScrollBox: TScrollBox
-        Left = 0
-        Top = 0
-        Width = 454
-        Height = 525
-        VertScrollBar.Range = 1200
-        Align = alClient
-        AutoScroll = False
-        TabOrder = 0
-        object DeviceFlagsGroupBox: TGroupBox
-          Left = 0
-          Top = 137
-          Width = 433
-          Height = 186
-          Align = alTop
-          Caption = 'Flags'
-          TabOrder = 0
-          object CheckBox1: TCheckBox
-            Left = 3
-            Top = 16
-            Width = 97
-            Height = 17
-            Caption = 'Buffered I/O'
-            TabOrder = 0
-          end
-          object CheckBox2: TCheckBox
-            Left = 3
-            Top = 32
-            Width = 97
-            Height = 17
-            Caption = 'Direct I/O'
-            TabOrder = 1
-          end
-          object CheckBox3: TCheckBox
-            Left = 3
-            Top = 48
-            Width = 97
-            Height = 17
-            Caption = 'Enumerated'
-            TabOrder = 2
-          end
-          object CheckBox4: TCheckBox
-            Left = 115
-            Top = 16
-            Width = 97
-            Height = 17
-            Caption = 'Initializing'
-            TabOrder = 3
-          end
-          object CheckBox5: TCheckBox
-            Left = 115
-            Top = 32
-            Width = 97
-            Height = 17
-            Caption = 'Exclusive'
-            TabOrder = 4
-          end
-          object CheckBox6: TCheckBox
-            Left = 115
-            Top = 48
-            Width = 97
-            Height = 17
-            Caption = 'Map I/O Buffer'
-            TabOrder = 5
-          end
-          object CheckBox7: TCheckBox
-            Left = 235
-            Top = 16
-            Width = 97
-            Height = 17
-            Caption = 'Power Inrush'
-            TabOrder = 6
-          end
-          object CheckBox8: TCheckBox
-            Left = 235
-            Top = 32
-            Width = 97
-            Height = 17
-            Caption = 'Power Pageable'
-            TabOrder = 7
-          end
-          object CheckBox9: TCheckBox
-            Left = 235
-            Top = 48
-            Width = 126
-            Height = 17
-            Caption = 'Shutdown Registered'
-            TabOrder = 8
-          end
-          object CheckBox10: TCheckBox
-            Left = 3
-            Top = 64
-            Width = 97
-            Height = 17
-            Caption = 'Verify Volume'
-            TabOrder = 9
-          end
-          object CheckBox23: TCheckBox
-            Left = 115
-            Top = 64
-            Width = 73
-            Height = 17
-            Caption = 'Named'
-            TabOrder = 10
-          end
-          object CheckBox24: TCheckBox
-            Left = 235
-            Top = 64
-            Width = 120
-            Height = 17
-            Caption = 'Boot Partition'
-            TabOrder = 11
-          end
-          object CheckBox25: TCheckBox
-            Left = 363
-            Top = 16
-            Width = 120
-            Height = 17
-            Caption = 'Long Term'
-            TabOrder = 12
-          end
-          object CheckBox26: TCheckBox
-            Left = 363
-            Top = 32
-            Width = 120
-            Height = 17
-            Caption = 'Never Last'
-            TabOrder = 13
-          end
-          object CheckBox27: TCheckBox
-            Left = 363
-            Top = 48
-            Width = 120
-            Height = 17
-            Caption = 'Low Priority FS'
-            TabOrder = 14
-          end
-          object CheckBox28: TCheckBox
-            Left = 363
-            Top = 64
-            Width = 120
-            Height = 17
-            Caption = 'Transactions'
-            TabOrder = 15
-          end
-          object CheckBox29: TCheckBox
-            Left = 3
-            Top = 80
-            Width = 106
-            Height = 17
-            Caption = 'Force Neither I/O'
-            TabOrder = 16
-          end
-          object CheckBox30: TCheckBox
-            Left = 115
-            Top = 80
-            Width = 120
-            Height = 17
-            Caption = 'Volume'
-            TabOrder = 17
-          end
-          object CheckBox31: TCheckBox
-            Left = 235
-            Top = 80
-            Width = 120
-            Height = 17
-            Caption = 'System Partition'
-            TabOrder = 18
-          end
-          object CheckBox32: TCheckBox
-            Left = 363
-            Top = 81
-            Width = 120
-            Height = 17
-            Caption = 'Critical Partition'
-            TabOrder = 19
-          end
-          object CheckBox49: TCheckBox
-            Left = 3
-            Top = 120
-            Width = 106
-            Height = 17
-            Caption = 'Unload pending'
-            TabOrder = 20
-          end
-          object CheckBox50: TCheckBox
-            Left = 3
-            Top = 136
-            Width = 106
-            Height = 17
-            Caption = 'Remove processed'
-            TabOrder = 21
-          end
-          object CheckBox51: TCheckBox
-            Left = 3
-            Top = 152
-            Width = 106
-            Height = 17
-            Caption = 'StartIo by key'
-            TabOrder = 22
-          end
-          object CheckBox52: TCheckBox
-            Left = 115
-            Top = 120
-            Width = 106
-            Height = 17
-            Caption = 'Delete pending'
-            TabOrder = 23
-          end
-          object CheckBox53: TCheckBox
-            Left = 235
-            Top = 120
-            Width = 106
-            Height = 17
-            Caption = 'Remove pending'
-            TabOrder = 24
-          end
-          object CheckBox54: TCheckBox
-            Left = 235
-            Top = 136
-            Width = 106
-            Height = 17
-            Caption = 'StartIo requested'
-            TabOrder = 25
-          end
-          object CheckBox55: TCheckBox
-            Left = 235
-            Top = 152
-            Width = 106
-            Height = 17
-            Caption = 'StartIo deferred'
-            TabOrder = 26
-          end
-          object CheckBox56: TCheckBox
-            Left = 115
-            Top = 152
-            Width = 106
-            Height = 17
-            Caption = 'StartIo cancellable'
-            TabOrder = 27
-          end
-          object CheckBox57: TCheckBox
-            Left = 115
-            Top = 136
-            Width = 106
-            Height = 17
-            Caption = 'Start pending'
-            TabOrder = 28
-          end
-          object CheckBox58: TCheckBox
-            Left = 3
-            Top = 168
-            Width = 106
-            Height = 17
-            Caption = 'StartIo no cancel'
-            TabOrder = 29
-          end
-        end
-        object DeviceCharacteristicsGroupBox: TGroupBox
-          Left = 0
-          Top = 323
-          Width = 433
-          Height = 72
-          Align = alTop
-          Caption = 'Characteristics'
-          TabOrder = 1
-          object CheckBox11: TCheckBox
-            Left = 3
-            Top = 17
-            Width = 126
-            Height = 17
-            Caption = 'Autogenerated Name'
-            TabOrder = 0
-          end
-          object CheckBox12: TCheckBox
-            Left = 3
-            Top = 33
-            Width = 126
-            Height = 17
-            Caption = 'Characteristic PnP'
-            TabOrder = 1
-          end
-          object CheckBox13: TCheckBox
-            Left = 3
-            Top = 47
-            Width = 142
-            Height = 17
-            Caption = 'Characteristic TS'
-            TabOrder = 2
-          end
-          object CheckBox14: TCheckBox
-            Left = 147
-            Top = 47
-            Width = 142
-            Height = 17
-            Caption = 'WebDAV'
-            TabOrder = 3
-          end
-          object CheckBox15: TCheckBox
-            Left = 147
-            Top = 17
-            Width = 94
-            Height = 17
-            Caption = 'Mounted'
-            TabOrder = 4
-          end
-          object CheckBox16: TCheckBox
-            Left = 147
-            Top = 33
-            Width = 94
-            Height = 17
-            Caption = 'Secure Open'
-            TabOrder = 5
-          end
-          object CheckBox17: TCheckBox
-            Left = 247
-            Top = 47
-            Width = 94
-            Height = 17
-            Caption = 'Diskette'
-            TabOrder = 6
-          end
-          object CheckBox18: TCheckBox
-            Left = 343
-            Top = 47
-            Width = 94
-            Height = 17
-            Caption = 'Read Only'
-            TabOrder = 7
-          end
-          object CheckBox19: TCheckBox
-            Left = 247
-            Top = 17
-            Width = 126
-            Height = 17
-            Caption = 'Remote'
-            TabOrder = 8
-          end
-          object CheckBox20: TCheckBox
-            Left = 247
-            Top = 33
-            Width = 126
-            Height = 17
-            Caption = 'Removable'
-            TabOrder = 9
-          end
-          object CheckBox21: TCheckBox
-            Left = 343
-            Top = 17
-            Width = 126
-            Height = 17
-            Caption = 'Virtual Volume'
-            TabOrder = 10
-          end
-          object CheckBox22: TCheckBox
-            Left = 343
-            Top = 33
-            Width = 126
-            Height = 17
-            Caption = 'Write Once'
-            TabOrder = 11
-          end
-        end
-        object DevicePnPGroupBox: TGroupBox
-          Left = 0
-          Top = 702
-          Width = 433
-          Height = 498
-          Align = alClient
-          Caption = 'PnP'
-          TabOrder = 2
-          object DevicePnpListView: TListView
-            Left = 2
-            Top = 15
-            Width = 429
-            Height = 481
-            Align = alClient
-            Columns = <
-              item
-                Caption = 'Name'
-                Width = 100
-              end
-              item
-                AutoSize = True
-                Caption = 'Value'
-              end>
-            ReadOnly = True
-            RowSelect = True
-            TabOrder = 0
-            ViewStyle = vsReport
-            OnDblClick = DriverDevicesJumpOnEvent
-            ExplicitHeight = 361
-          end
-        end
-        object DeviceVPBGroupBox: TGroupBox
-          Left = 0
-          Top = 395
-          Width = 433
-          Height = 137
-          Align = alTop
-          Caption = 'Volume Parameter Block'
-          TabOrder = 3
-          object Label9: TLabel
-            Left = 8
-            Top = 16
-            Width = 39
-            Height = 13
-            Caption = 'Address'
-          end
-          object Label10: TLabel
-            Left = 240
-            Top = 16
-            Width = 25
-            Height = 13
-            Caption = 'Flags'
-          end
-          object LabeledEdit8: TLabeledEdit
-            Left = 2
-            Top = 76
-            Width = 209
-            Height = 21
-            EditLabel.Width = 100
-            EditLabel.Height = 13
-            EditLabel.Caption = 'Volume device (VDO)'
-            ReadOnly = True
-            TabOrder = 0
-            OnDblClick = DeviceJumpOnEvent
-          end
-          object LabeledEdit9: TLabeledEdit
-            Left = 227
-            Top = 76
-            Width = 198
-            Height = 21
-            EditLabel.Width = 72
-            EditLabel.Height = 13
-            EditLabel.Caption = 'Storage device'
-            ReadOnly = True
-            TabOrder = 1
-            OnDblClick = DeviceJumpOnEvent
-          end
-          object LabeledEdit10: TLabeledEdit
-            Left = 2
-            Top = 113
-            Width = 209
-            Height = 21
-            EditLabel.Width = 59
-            EditLabel.Height = 13
-            EditLabel.Caption = 'Volume label'
-            ReadOnly = True
-            TabOrder = 2
-          end
-          object LabeledEdit11: TLabeledEdit
-            Left = 227
-            Top = 113
-            Width = 193
-            Height = 21
-            EditLabel.Width = 80
-            EditLabel.Height = 13
-            EditLabel.Caption = 'Reference count'
-            ReadOnly = True
-            TabOrder = 3
-          end
-          object Edit9: TEdit
-            Left = 53
-            Top = 16
-            Width = 158
-            Height = 21
-            ReadOnly = True
-            TabOrder = 4
-          end
-          object Edit10: TEdit
-            Left = 277
-            Top = 16
-            Width = 158
-            Height = 21
-            ReadOnly = True
-            TabOrder = 5
-          end
-          object CheckBox43: TCheckBox
-            Left = 3
-            Top = 43
-            Width = 78
-            Height = 17
-            Caption = 'Mounted'
-            TabOrder = 6
-          end
-          object CheckBox44: TCheckBox
-            Left = 75
-            Top = 43
-            Width = 54
-            Height = 17
-            Caption = 'Locked'
-            TabOrder = 7
-          end
-          object CheckBox45: TCheckBox
-            Left = 135
-            Top = 43
-            Width = 73
-            Height = 17
-            Caption = 'Persistent'
-            TabOrder = 8
-          end
-          object CheckBox46: TCheckBox
-            Left = 208
-            Top = 43
-            Width = 81
-            Height = 17
-            Caption = 'Raw mount'
-            TabOrder = 9
-          end
-          object CheckBox47: TCheckBox
-            Left = 295
-            Top = 43
-            Width = 90
-            Height = 17
-            Caption = 'Direct writes'
-            TabOrder = 10
-          end
-          object CheckBox48: TCheckBox
-            Left = 383
-            Top = 43
-            Width = 74
-            Height = 17
-            Caption = 'Removing'
-            TabOrder = 11
-          end
-        end
-        object DeviceGeneralInfoPanel: TPanel
-          Left = 0
-          Top = 0
-          Width = 433
-          Height = 137
-          Align = alTop
-          TabOrder = 4
-          object Label1: TLabel
-            Left = 2
-            Top = 8
-            Width = 39
-            Height = 13
-            Caption = 'Address'
-          end
-          object Label2: TLabel
-            Left = 3
-            Top = 35
-            Width = 27
-            Height = 13
-            Caption = 'Name'
-          end
-          object Label3: TLabel
-            Left = 202
-            Top = 3
-            Width = 71
-            Height = 13
-            Caption = 'Driver Address'
-          end
-          object Label4: TLabel
-            Left = 202
-            Top = 35
-            Width = 59
-            Height = 13
-            Caption = 'Driver Name'
-          end
-          object Label5: TLabel
-            Left = 2
-            Top = 62
-            Width = 59
-            Height = 13
-            Caption = 'Device Type'
-          end
-          object Label6: TLabel
-            Left = 3
-            Top = 89
-            Width = 25
-            Height = 13
-            Caption = 'Flags'
-          end
-          object Label7: TLabel
-            Left = 202
-            Top = 91
-            Width = 71
-            Height = 13
-            Caption = 'Characteristics'
-          end
-          object Label8: TLabel
-            Left = 2
-            Top = 116
-            Width = 56
-            Height = 13
-            Caption = 'Disk Volume'
-          end
-          object Edit1: TEdit
-            Left = 75
-            Top = 0
-            Width = 121
-            Height = 21
-            ReadOnly = True
-            TabOrder = 0
-            OnDblClick = DeviceJumpOnEvent
-          end
-          object Edit2: TEdit
-            Left = 75
-            Top = 27
-            Width = 121
-            Height = 21
-            ReadOnly = True
-            TabOrder = 1
-            OnDblClick = DeviceJumpOnEvent
-          end
-          object Edit3: TEdit
-            Left = 279
-            Top = 0
-            Width = 121
-            Height = 21
-            ReadOnly = True
-            TabOrder = 2
-            OnDblClick = DriverJumpOnEvent
-          end
-          object Edit4: TEdit
-            Left = 280
-            Top = 27
-            Width = 121
-            Height = 21
-            ReadOnly = True
-            TabOrder = 3
-            OnDblClick = DriverJumpOnEvent
-          end
-          object Edit5: TEdit
-            Left = 75
-            Top = 54
-            Width = 326
-            Height = 21
-            ReadOnly = True
-            TabOrder = 4
-          end
-          object Edit6: TEdit
-            Left = 75
-            Top = 81
-            Width = 121
-            Height = 21
-            ReadOnly = True
-            TabOrder = 5
-          end
-          object Edit7: TEdit
-            Left = 279
-            Top = 83
-            Width = 121
-            Height = 21
-            ReadOnly = True
-            TabOrder = 6
-          end
-          object Edit8: TEdit
-            Left = 75
-            Top = 110
-            Width = 326
-            Height = 21
-            ReadOnly = True
-            TabOrder = 7
-            OnDblClick = DeviceJumpOnEvent
-          end
-        end
-        object CapabilitiesGroupBox: TGroupBox
-          Left = 0
-          Top = 532
-          Width = 433
-          Height = 170
-          Align = alTop
-          Caption = 'Device capabilities'
-          TabOrder = 5
-          object CapabilitiesListView: TListView
-            Left = 2
-            Top = 15
-            Width = 429
-            Height = 153
-            Align = alClient
-            Columns = <
-              item
-                Caption = 'Name'
-                Width = 100
-              end
-              item
-                AutoSize = True
-                Caption = 'Value'
-              end>
-            ReadOnly = True
-            RowSelect = True
-            TabOrder = 0
-            ViewStyle = vsReport
-            ExplicitHeight = 273
-          end
-        end
+    Columns = <
+      item
+        Caption = 'Name'
+        Width = 75
       end
-    end
-    object DriverTabSheet: TTabSheet
-      Caption = 'Driver'
-      ImageIndex = 1
-      object DriverDevicesGroupBox: TGroupBox
-        Left = 0
-        Top = 209
-        Width = 454
-        Height = 104
-        Align = alTop
-        Caption = 'Devices'
-        TabOrder = 0
-        object DriverDevicesListView: TListView
-          Left = 2
-          Top = 15
-          Width = 450
-          Height = 87
-          Align = alClient
-          Columns = <
-            item
-              AutoSize = True
-              Caption = 'Name'
-            end
-            item
-              Caption = 'Address'
-              Width = 150
-            end>
-          ReadOnly = True
-          RowSelect = True
-          TabOrder = 0
-          ViewStyle = vsReport
-          OnDblClick = DriverDevicesJumpOnEvent
-        end
-      end
-      object DriverMajorFunctionGroupBox: TGroupBox
-        Left = 0
-        Top = 313
-        Width = 454
-        Height = 190
-        Align = alTop
-        Caption = 'Major Function'
-        TabOrder = 1
-        object MajorFunctionListview: TListView
-          Left = 2
-          Top = 15
-          Width = 450
-          Height = 173
-          Align = alClient
-          Columns = <
-            item
-              Caption = 'Function'
-              Width = 120
-            end
-            item
-              AutoSize = True
-              Caption = 'Driver'
-            end
-            item
-              Caption = 'Address'
-              Width = 150
-            end>
-          ReadOnly = True
-          RowSelect = True
-          TabOrder = 0
-          ViewStyle = vsReport
-          OnDblClick = DriverMajorFunctionJumpOnEvent
-        end
-      end
-      object DriverGeneralInfoPanel: TPanel
-        Left = 0
-        Top = 0
-        Width = 454
-        Height = 209
-        Align = alTop
-        TabOrder = 2
-        object DriverAddressLEdit: TLabeledEdit
-          Left = 2
-          Top = 22
-          Width = 135
-          Height = 21
-          EditLabel.Width = 73
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Object address'
-          ReadOnly = True
-          TabOrder = 0
-          OnDblClick = DriverJumpOnEvent
-        end
-        object DriverNameLEdit: TLabeledEdit
-          Left = 152
-          Top = 18
-          Width = 145
-          Height = 21
-          EditLabel.Width = 27
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Name'
-          ReadOnly = True
-          TabOrder = 1
-          OnDblClick = DriverJumpOnEvent
-        end
-        object LabeledEdit1: TLabeledEdit
-          Left = 2
-          Top = 64
-          Width = 135
-          Height = 21
-          EditLabel.Width = 97
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image base address'
-          ReadOnly = True
-          TabOrder = 2
-        end
-        object LabeledEdit2: TLabeledEdit
-          Left = 152
-          Top = 64
-          Width = 145
-          Height = 21
-          EditLabel.Width = 51
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image size'
-          ReadOnly = True
-          TabOrder = 3
-        end
-        object LabeledEdit3: TLabeledEdit
-          Left = 2
-          Top = 104
-          Width = 135
-          Height = 21
-          EditLabel.Width = 55
-          EditLabel.Height = 13
-          EditLabel.Caption = 'DriverEntry'
-          ReadOnly = True
-          TabOrder = 4
-        end
-        object LabeledEdit4: TLabeledEdit
-          Left = 152
-          Top = 104
-          Width = 145
-          Height = 21
-          EditLabel.Width = 62
-          EditLabel.Height = 13
-          EditLabel.Caption = 'DriverUnload'
-          NumbersOnly = True
-          TabOrder = 5
-        end
-        object LabeledEdit5: TLabeledEdit
-          Left = 2
-          Top = 182
-          Width = 295
-          Height = 21
-          EditLabel.Width = 55
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image path'
-          ReadOnly = True
-          TabOrder = 6
-        end
-        object LabeledEdit6: TLabeledEdit
-          Left = 2
-          Top = 144
-          Width = 135
-          Height = 21
-          EditLabel.Width = 36
-          EditLabel.Height = 13
-          EditLabel.Caption = 'StartIO'
-          ReadOnly = True
-          TabOrder = 7
-        end
-        object LabeledEdit7: TLabeledEdit
-          Left = 152
-          Top = 144
-          Width = 145
-          Height = 21
-          EditLabel.Width = 25
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Flags'
-          ReadOnly = True
-          TabOrder = 8
-        end
-        object DriverFlagsGroupBox: TGroupBox
-          Left = 303
-          Top = 0
-          Width = 146
-          Height = 201
-          Caption = 'Flags'
-          TabOrder = 9
-          object CheckBox36: TCheckBox
-            Left = 11
-            Top = 43
-            Width = 103
-            Height = 17
-            Caption = 'Legacy driver'
-            TabOrder = 0
-          end
-          object CheckBox37: TCheckBox
-            Left = 11
-            Top = 66
-            Width = 103
-            Height = 17
-            Caption = 'Built-in driver'
-            TabOrder = 1
-          end
-          object CheckBox38: TCheckBox
-            Left = 11
-            Top = 89
-            Width = 132
-            Height = 17
-            Caption = 'Reinitialization'
-            TabOrder = 2
-          end
-          object CheckBox39: TCheckBox
-            Left = 11
-            Top = 112
-            Width = 103
-            Height = 17
-            Caption = 'Initialized'
-            TabOrder = 3
-          end
-          object CheckBox40: TCheckBox
-            Left = 11
-            Top = 135
-            Width = 132
-            Height = 17
-            Caption = 'Boot reinitialization'
-            TabOrder = 4
-          end
-          object CheckBox41: TCheckBox
-            Left = 11
-            Top = 158
-            Width = 103
-            Height = 17
-            Caption = 'Legacy resources'
-            TabOrder = 5
-          end
-          object CheckBox42: TCheckBox
-            Left = 11
-            Top = 181
-            Width = 134
-            Height = 17
-            Caption = 'Base filesystem driver'
-            TabOrder = 6
-          end
-          object CheckBox35: TCheckBox
-            Left = 11
-            Top = 20
-            Width = 134
-            Height = 17
-            Caption = 'DriverUnload invoked'
-            TabOrder = 7
-          end
-        end
-      end
-    end
-    object TabSheet1: TTabSheet
-      Caption = 'Log Settings'
-      ImageIndex = 2
-      object GroupBox6: TGroupBox
-        Left = 0
-        Top = 63
-        Width = 185
-        Height = 462
-        Align = alLeft
-        Caption = 'Include Drivers'
-        TabOrder = 0
-        object LogIncludeDriversChL: TCheckListBox
-          Left = 2
-          Top = 73
-          Width = 181
-          Height = 387
-          Align = alClient
-          DoubleBuffered = True
-          ItemHeight = 13
-          ParentDoubleBuffered = False
-          TabOrder = 0
-        end
-        object Panel3: TPanel
-          Left = 2
-          Top = 15
-          Width = 181
-          Height = 58
-          Align = alTop
-          TabOrder = 1
-          object Button1: TButton
-            Left = 0
-            Top = 2
-            Width = 57
-            Height = 25
-            Caption = 'Select all'
-            TabOrder = 0
-            OnClick = Button1Click
-          end
-          object Button2: TButton
-            Left = 0
-            Top = 27
-            Width = 177
-            Height = 25
-            Caption = 'Unselect all'
-            TabOrder = 1
-            OnClick = Button1Click
-          end
-          object Button3: TButton
-            Left = 120
-            Top = 2
-            Width = 57
-            Height = 25
-            Caption = 'Invert'
-            TabOrder = 2
-            OnClick = Button1Click
-          end
-        end
-      end
-      object GroupBox7: TGroupBox
-        Left = 185
-        Top = 63
-        Width = 118
-        Height = 462
-        Align = alLeft
-        Caption = 'Driver Settings'
-        TabOrder = 1
-        object LogDriverSettingsChL: TCheckListBox
-          Left = 2
-          Top = 73
-          Width = 114
-          Height = 387
-          OnClickCheck = LogDriverSettingsChLClickCheck
-          Align = alClient
-          ItemHeight = 13
-          Items.Strings = (
-            'File name'
-            'Image base address'
-            'Image size'
-            'DriverEntry'
-            'DriverUnload'
-            'StartIo'
-            'Flags'
-            'Flags as string'
-            'Major functions'
-            'Number of devices'
-            'Devices')
-          TabOrder = 0
-        end
-        object Panel4: TPanel
-          Left = 2
-          Top = 15
-          Width = 114
-          Height = 58
-          Align = alTop
-          TabOrder = 1
-          object Button4: TButton
-            Left = 4
-            Top = 2
-            Width = 57
-            Height = 25
-            Caption = 'Select all'
-            TabOrder = 0
-            OnClick = Button1Click
-          end
-          object Button5: TButton
-            Left = 4
-            Top = 27
-            Width = 116
-            Height = 25
-            Caption = 'Unselect all'
-            TabOrder = 1
-            OnClick = Button1Click
-          end
-          object Button6: TButton
-            Left = 63
-            Top = 2
-            Width = 57
-            Height = 25
-            Caption = 'Invert'
-            TabOrder = 2
-            OnClick = Button1Click
-          end
-        end
-      end
-      object GroupBox8: TGroupBox
-        Left = 303
-        Top = 63
-        Width = 150
-        Height = 462
-        Align = alLeft
-        Caption = 'Device Settings'
-        TabOrder = 2
-        object LogDeviceSettingsChL: TCheckListBox
-          Left = 2
-          Top = 73
-          Width = 146
-          Height = 387
-          OnClickCheck = LogDriverSettingsChLClickCheck
-          Align = alClient
-          ItemHeight = 13
-          Items.Strings = (
-            ' Type'
-            ' Disk Device'
-            ' Number of upper devices'
-            ' Upper devices'
-            ' Number of lower devices'
-            ' Lower devices'
-            ' Flags'
-            ' Flags as string'
-            ' Characteristics'
-            ' Characteristics as string'
-            ' Plug&Play information'
-            ' Friendly name'
-            ' Description'
-            ' Manufacturer'
-            ' Enumerator'
-            ' Location'
-            ' Class'
-            ' Class GUID'
-            'Device ID'
-            'Instance ID'
-            'Hardware IDs'
-            'Compatible IDs'
-            'Capabilities'
-            'Removal relations'
-            'Eject relations'
-            'Security'
-            'Extension flags'
-            'Extension flags as string')
-          TabOrder = 0
-        end
-        object Panel5: TPanel
-          Left = 2
-          Top = 15
-          Width = 146
-          Height = 58
-          Align = alTop
-          TabOrder = 1
-          object Button7: TButton
-            Left = 2
-            Top = 2
-            Width = 59
-            Height = 25
-            Caption = 'Select all'
-            TabOrder = 0
-            OnClick = Button1Click
-          end
-          object Button8: TButton
-            Left = 2
-            Top = 27
-            Width = 139
-            Height = 25
-            Caption = 'Unselect all'
-            TabOrder = 1
-            OnClick = Button1Click
-          end
-          object Button9: TButton
-            Left = 82
-            Top = 2
-            Width = 59
-            Height = 25
-            Caption = 'Invert'
-            TabOrder = 2
-            OnClick = Button1Click
-          end
-        end
-      end
-      object Panel6: TPanel
-        Left = 0
-        Top = 0
-        Width = 454
-        Height = 63
-        Align = alTop
-        TabOrder = 3
-        object GroupBox9: TGroupBox
-          Left = 1
-          Top = 1
-          Width = 452
-          Height = 56
-          Align = alTop
-          Caption = 'General'
-          TabOrder = 0
-          object CheckBox33: TCheckBox
-            Left = 3
-            Top = 16
-            Width = 175
-            Height = 17
-            Caption = 'Include VrtuleTree information'
-            Checked = True
-            State = cbChecked
-            TabOrder = 0
-          end
-          object CheckBox34: TCheckBox
-            Left = 3
-            Top = 36
-            Width = 175
-            Height = 17
-            Caption = 'Include OS version information'
-            Checked = True
-            State = cbChecked
-            TabOrder = 1
-          end
-        end
-      end
-    end
-    object OtherSettingsTabSheet: TTabSheet
-      Caption = 'Other Settings'
-      ImageIndex = 3
-      object OtherSettingsCaptureGroupBox: TGroupBox
-        Left = 0
-        Top = 0
-        Width = 454
-        Height = 81
-        Align = alTop
-        Caption = 'Capture'
-        TabOrder = 0
-        object CaptureDeviceIdCheckBox: TCheckBox
-          Left = 3
-          Top = 24
-          Width = 198
-          Height = 17
-          Caption = 'Device ID (IRP_MJ_QUERY_ID)'
-          TabOrder = 0
-        end
-        object CaptureFastIoDispatchCheckBox: TCheckBox
-          Left = 3
-          Top = 40
-          Width = 145
-          Height = 17
-          Caption = 'Fast I/O dispatch'
-          Enabled = False
-          TabOrder = 1
-        end
-        object CaptureDevnodeTreeCheckBox: TCheckBox
-          Left = 3
-          Top = 56
-          Width = 145
-          Height = 17
-          Caption = 'Devnode tree'
-          Enabled = False
-          TabOrder = 2
-        end
-      end
-    end
-  end
-  object MainMenu1: TMainMenu
-    Left = 144
-    Top = 88
-    object File1: TMenuItem
-      Caption = 'File'
-      object Createsnapshot1: TMenuItem
-        Caption = 'Create snapshot'
-        OnClick = Createsnapshot1Click
-      end
-      object Createlog1: TMenuItem
-        Caption = 'Create log'
-        object est1: TMenuItem
-          Caption = 'Test...'
-          OnClick = est1Click
-        end
-      end
-      object N1: TMenuItem
-        Caption = '-'
-      end
-      object Exit1: TMenuItem
-        Caption = 'Exit'
-        OnClick = Exit1Click
-      end
-    end
-    object View1: TMenuItem
-      Caption = 'View'
-      object DriverDisplayMenuItem: TMenuItem
-        Caption = 'Driver'
-        object Devices1: TMenuItem
-          Caption = 'Devices (tree)'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object N2: TMenuItem
-          Caption = '-'
-        end
-        object Flags1: TMenuItem
-          Caption = 'Flags'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object Devices2: TMenuItem
-          Caption = 'Devices'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object MajorFunction1: TMenuItem
-          Caption = 'Major Function'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-      end
-      object DeviceDisplayMenuItem: TMenuItem
-        Caption = 'Device'
-        object Lowerdevicestree1: TMenuItem
-          Caption = 'Lower devices (tree)'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object Upperdevicestree1: TMenuItem
-          Caption = 'Upper devices (tree)'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object N3: TMenuItem
-          Caption = '-'
-        end
-        object Flags2: TMenuItem
-          Caption = 'Flags'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object Characteristics1: TMenuItem
-          Caption = 'Characteristics'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object VPB1: TMenuItem
-          Caption = 'VPB'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object PnPinformation1: TMenuItem
-          Caption = 'PnP information'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object HardwareIDs1: TMenuItem
-          Caption = 'Hardware IDs'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object CompatibleIDs1: TMenuItem
-          Caption = 'Compatible IDs'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object Capabilities1: TMenuItem
-          Caption = 'Capabilities'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object Removalrelations1: TMenuItem
-          Caption = 'Removal relations'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object Ejectrelations1: TMenuItem
-          Caption = 'Eject relations'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-        object Security1: TMenuItem
-          Caption = 'Security'
-          Checked = True
-          OnClick = DisplayMenuItemClick
-        end
-      end
-    end
-    object Help1: TMenuItem
-      Caption = 'Help'
-      object AboutVrtuleTree1: TMenuItem
-        Caption = 'About VrtuleTree'
-        OnClick = AboutVrtuleTree1Click
-      end
-    end
-  end
-  object SaveDialog1: TSaveDialog
-    Left = 136
-    Top = 40
-  end
-  object DriverDeviceTreePopupMenu: TPopupMenu
-    OnPopup = DriverDeviceTreePopupMenuPopup
-    Left = 128
-    Top = 144
-    object Gotodriver1: TMenuItem
-      Caption = 'Goto driver'
-      OnClick = Gotodriver1Click
-    end
-    object Expandall1: TMenuItem
-      Caption = 'Expand all subitems'
-      OnClick = Expandall1Click
-    end
-    object Collapse1: TMenuItem
-      Caption = 'Collapse'
-      OnClick = Collapse1Click
-    end
+      item
+        AutoSize = True
+        Caption = 'Value'
+      end>
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    Items.ItemData = {
+      05570100000500000000000000FFFFFFFFFFFFFFFF01000000FFFFFFFF000000
+      0007560065007200730069006F006E000331002E003500F044541300000000FF
+      FFFFFFFFFFFFFF01000000FFFFFFFF000000000641007500740068006F007200
+      0B4D0061007200740069006E00200044007200E1006200A035541300000000FF
+      FFFFFFFFFFFFFF01000000FFFFFFFF00000000074C006900630065006E007300
+      650008460072006500650077006100720065005034541300000000FFFFFFFFFF
+      FFFFFF01000000FFFFFFFF0000000008520065006C0065006100730065006400
+      0C320034002E002000310032002E002000320030003100350018567D19000000
+      00FFFFFFFFFFFFFFFF01000000FFFFFFFF000000000743006F006E0074006100
+      63007400146D0061007200740069006E002E006400720061006200400065006D
+      00610069006C002E0063007A0050567D19FFFFFFFFFFFFFFFFFFFF}
+    ReadOnly = True
+    RowSelect = True
+    ParentFont = False
+    ShowColumnHeaders = False
+    TabOrder = 0
+    ViewStyle = vsReport
   end
 end

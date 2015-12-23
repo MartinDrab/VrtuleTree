@@ -6,8 +6,6 @@
 #undef DEBUG_TRACE_ENABLED
 #define DEBUG_TRACE_ENABLED 0
 
-// required to compile in certain debug settings.
-volatile ULONG __security_cookie = __LINE__;
 
 
 

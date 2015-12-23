@@ -6,7 +6,7 @@ Uses
   Winapi.Windows, Winapi.Messages, System.SysUtils,
   System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls,
-  Vcl.Menus, VTreeDriver, Vcl.StdCtrls,
+  Vcl.Menus, VTreeDriver, Vcl.StdCtrls, Generics.Collections,
   Vcl.ExtCtrls, Vcl.CheckLst, LogSettings, Snapshot;
 
 Type
@@ -164,10 +164,6 @@ Type
     Edit7: TEdit;
     Edit8: TEdit;
     DeviceScrollBox: TScrollBox;
-    RemovalRelationsGroupBox: TGroupBox;
-    RemovalRelationsListView: TListView;
-    EjectRelationsGroupBox: TGroupBox;
-    EjectRelationsListView: TListView;
     View1: TMenuItem;
     DriverDisplayMenuItem: TMenuItem;
     DeviceDisplayMenuItem: TMenuItem;
@@ -190,13 +186,28 @@ Type
     Security1: TMenuItem;
     Help1: TMenuItem;
     AboutVrtuleTree1: TMenuItem;
-    CompatibleIDsGroupBox: TGroupBox;
-    CompatibleIDsListView: TListView;
-    HardwareIDsGroupBox: TGroupBox;
-    HardwareIDsListView: TListView;
     CapabilitiesGroupBox: TGroupBox;
     CapabilitiesListView: TListView;
     Capabilities1: TMenuItem;
+    CheckBox49: TCheckBox;
+    CheckBox50: TCheckBox;
+    CheckBox51: TCheckBox;
+    CheckBox52: TCheckBox;
+    CheckBox53: TCheckBox;
+    CheckBox54: TCheckBox;
+    CheckBox55: TCheckBox;
+    CheckBox56: TCheckBox;
+    CheckBox57: TCheckBox;
+    CheckBox58: TCheckBox;
+    DriverDeviceTreePopupMenu: TPopupMenu;
+    Gotodriver1: TMenuItem;
+    Expandall1: TMenuItem;
+    Collapse1: TMenuItem;
+    OtherSettingsTabSheet: TTabSheet;
+    OtherSettingsCaptureGroupBox: TGroupBox;
+    CaptureDeviceIdCheckBox: TCheckBox;
+    CaptureFastIoDispatchCheckBox: TCheckBox;
+    CaptureDevnodeTreeCheckBox: TCheckBox;
     Procedure FormCreate(Sender: TObject);
     Procedure FormClose(Sender: TObject; var Action: TCloseAction);
     Procedure Exit1Click(Sender: TObject);
@@ -206,6 +217,15 @@ Type
     Procedure Button1Click(Sender: TObject);
     Procedure LogDriverSettingsChLClickCheck(Sender: TObject);
     procedure DisplayMenuItemClick(Sender: TObject);
+    procedure AboutVrtuleTree1Click(Sender: TObject);
+    procedure DeviceJumpOnEvent(Sender: TObject);
+    procedure DriverJumpOnEvent(Sender: TObject);
+    procedure Gotodriver1Click(Sender: TObject);
+    procedure Expandall1Click(Sender: TObject);
+    procedure DriverDeviceTreePopupMenuPopup(Sender: TObject);
+    procedure DriverDevicesJumpOnEvent(Sender: TObject);
+    procedure DriverMajorFunctionJumpOnEvent(Sender: TObject);
+    procedure Collapse1Click(Sender: TObject);
   Private
     FDriverAddresses : TList;
     FDriverSizes : TList;
@@ -214,6 +234,9 @@ Type
     FSnapshot : TVTreeSnapshot;
     FDriverDisplaySettings : TDriverDisplaySettings;
     FDeviceDisplaySettings : TDeviceDisplaySettings;
+    FDeviceAddressToTreeNode : TDictionary<Pointer, TTreeNode>;
+    FDriverAddressToTreeNode : TDictionary<Pointer, TTreeNode>;
+    FImageBaseToDriverAddress : TDictionary<Pointer, Pointer>;
     Function CreateSnapshot:Boolean;
     Procedure DestroySnapshot;
     Function CreateDriverNode(ADriverRecord:PDriverSnapshot):TTreeNode;
@@ -223,9 +246,12 @@ Type
     Procedure DisplayDriverInfo(ADriverRecord:PDriverSnapshot);
     Procedure DisplayDeviceInfo(ADeviceRecord:PDeviceSnapshot);
     Procedure DisplayVPB(AVPB:PVPBSnapshot);
-    Procedure DisplayDeviceRelations(ATargetListView:TListView; ARelations:Array Of Pointer);
+    Procedure DisplayDeviceRelations(ARelations:Array Of Pointer; ARelationName:WideString);
     Procedure LogSettingsFromGUI;
     Procedure CheckListBoxInvert(AChL:TCheckListBox);
+    Procedure ListViewAddNameValue(AListView:TListView; AName:WideString; AValue:WideString; AData:Pointer = Nil);
+    Procedure GoToDriver(AAddress:Pointer; AIgnoreIfNonexistent:Boolean = False);
+    Procedure GoToDevice(AAddress:Pointer; AIgnoreIfNonexistent:Boolean = False);
   end;
 
 Var
@@ -236,7 +262,18 @@ Implementation
 {$R *.DFM}
 
 Uses
-  Kernel, Utils, Logger, TextLogger;
+  Kernel, Utils, Logger, TextLogger,
+  AboutForm;
+
+Procedure TForm1.ListViewAddNameValue(AListView:TListView; AName:WideString; AValue:WideString; AData:Pointer = Nil);
+begin
+With AListView.Items.Add Do
+  begin
+  Caption := AName;
+  SubItems.Add(AValue);
+  Data := AData;
+  end;
+end;
 
 Procedure TForm1.CheckListBoxInvert(AChL:TCheckListBox);
 Var
@@ -246,6 +283,25 @@ For I := 0 To AChL.Count - 1 Do
   AChL.Checked[I] := Not AChL.Checked[I];
 
 LogDriverSettingsChLClickCheck(AChL);
+end;
+
+Procedure TForm1.Collapse1Click(Sender: TObject);
+Var
+  tn : TTreeNode;
+begin
+tn := DriverDeviceTreeView.Selected;
+If Assigned(tn) Then
+  tn.Collapse(True)
+Else WarningDialog('No item selected');
+end;
+
+Procedure TForm1.AboutVrtuleTree1Click(Sender: TObject);
+begin
+WIth TABoutBox.Create(Application) Do
+  begin
+  ShowModal;
+  Free;
+  end;
 end;
 
 Procedure TForm1.Button1Click(Sender: TObject);
@@ -273,6 +329,9 @@ end;
 Procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
 DestroySnapshot;
+FImageBaseToDriverAddress.Free;
+FDeviceAddressToTreeNode.Free;
+FDriverAddressToTreeNode.Free;
 FLogSettings.Free;
 FDriverNames.Free;
 FDriverSizes.Free;
@@ -283,6 +342,9 @@ Procedure TForm1.FormCreate(Sender: TObject);
 Var
   I : Integer;
 begin
+FImageBaseToDriverAddress := TDictionary<Pointer, Pointer>.Create;
+FDeviceAddressToTreeNode := TDictionary<Pointer, TTreeNode>.Create;
+FDriverAddressToTreeNode := TDictionary<Pointer, TTreeNode>.Create;
 For I := 0 To IRP_MJ_MAXIMUM_FUNCTION Do
   begin
   With MajorFunctionListView.Items.Add Do
@@ -329,22 +391,52 @@ If Assigned(FSnapshot) Then
   FreeAndNil(FSnapshot);
 end;
 
+Procedure TForm1.DeviceJumpOnEvent(Sender: TObject);
+Var
+  deviceAddress : Pointer;
+begin
+deviceAddress := Pointer((Sender As TComponent).Tag);
+If Assigned(deviceAddress) Then
+  GotoDevice(deviceAddress);
+end;
+
 Procedure TForm1.Exit1Click(Sender: TObject);
 begin
 Close;
 end;
 
+Procedure TForm1.Expandall1Click(Sender: TObject);
+Var
+  tn : TTreeNode;
+begin
+tn := DriverDeviceTreeView.Selected;
+If Assigned(tn) Then
+  tn.Expand(True);
+end;
+
 Function TForm1.CreateSnapshot:Boolean;
 Var
   Snapshot : Pointer;
+  snapshotFlags : Cardinal;
 begin
 FDriverAddresses.Clear;
 FDriverSizes.Clear;
 FDriverNames.Clear;
+FImageBaseToDriverAddress.Clear;
 Result := GetDeviceDriverList(FDriverAddresses, FDriverSizes, FDriverNames);
 If Result Then
   begin
-  Result := DriverCreateSnapshot(Snapshot);
+  snapshotFlags := 0;
+  If CaptureDeviceIdCheckBox.Checked Then
+    snapshotFlags := (snapshotFlags And VTREE_SNAPSHOT_DEVICE_ID);
+
+  If CaptureFastIoDispatchCheckBox.Checked Then
+    snapshotFlags := (snapshotFlags And VTREE_SNAPSHOT_FAST_IO_DISPATCH);
+
+  If CaptureDevnodeTreeCheckBox.Checked Then
+    snapshotFlags := (snapshotFlags And VTREE_SNAPSHOT_DEVNODE_TREE);
+
+  Result := DriverCreateSnapshot(snapshotFlags, Snapshot);
   If Result Then
     begin
     FSnapshot := TVTreeSnapshot.Create(FDriverAddresses, FDriverSizes, FDriverNames, Snapshot);
@@ -364,6 +456,8 @@ Procedure TForm1.Createsnapshot1Click(Sender: TObject);
 Var
   Ret : Boolean;
 begin
+FDriverAddressToTreeNode.Clear;
+FDeviceAddressToTreeNode.Clear;
 DriverDeviceTreeView.Items.Clear;
 DestroySnapshot;
 Ret := CreateSnapshot;
@@ -387,6 +481,8 @@ Case ANodeType Of
 
 Result := DriverDeviceTreeView.Items.AddChild(AParent, DeviceName);
 Result.Data := ADeviceRecord;
+If ANodeType = dntCurrent Then
+  FDeviceAddressToTreeNode.Add(ADeviceRecord.Address, Result);
 end;
 
 Function TForm1.CreateDeviceNodes(ADeviceRecord:PDeviceSnapshot; AParent:TTreeNode):TTreeNode;
@@ -402,7 +498,10 @@ If FDeviceDisplaySettings.TreeLowerDevices Then
     DevNode := FSnapshot.GetDeviceByAddress(ADeviceRecord.LowerDevices[I]);
     If Assigned(DevNode) Then
       AParent := CreateDeviceNode(DevNode, AParent, dntLower)
-    Else AParent := DriverDeviceTreeView.Items.AddChild(AParent, Format('LOW: <unknown> (0x%p)', [ADeviceRecord.LowerDevices[I]]));
+    Else begin
+      AParent := DriverDeviceTreeView.Items.AddChild(AParent, Format('LOW: <unknown> (0x%p)', [ADeviceRecord.LowerDevices[I]]));
+      FDeviceAddressToTreeNode.Add(ADeviceRecord.LowerDevices[I], AParent);
+      end;
     end;
   end;
 
@@ -416,7 +515,10 @@ If FDeviceDisplaySettings.TreeUpperDevices Then
     DevNode := FSnapshot.GetDeviceByAddress(ADeviceRecord.UpperDevices[I]);
     If Assigned(DevNode) Then
       AParent := CreateDeviceNode(DevNode, AParent, dntUpper)
-    Else AParent := DriverDeviceTreeView.Items.AddChild(AParent, Format('UPP: <unknown> (0x%p)', [ADeviceRecord.UpperDevices[I]]));
+    Else begin
+      AParent := DriverDeviceTreeView.Items.AddChild(AParent, Format('UPP: <unknown> (0x%p)', [ADeviceRecord.UpperDevices[I]]));
+      FDeviceAddressToTreeNode.Add(ADeviceRecord.UpperDevices[I], AParent);
+      end;
     end;
   end;
 end;
@@ -441,6 +543,11 @@ If FDriverDisplaySettings.TreeDevices Then
       end;
     end;
   end;
+
+FDriverAddressToTreeNode.Add(ADriverRecord.Address, Result);
+If (Not FImageBaseToDriverAddress.ContainsKey(ADriverRecord.ImageBase)) And
+   (Assigned(ADriverRecord.ImageBase)) Then
+  FImageBaseToDriverAddress.Add(ADriverRecord.ImageBase, ADriverRecord.Address);
 end;
 
 Procedure TForm1.DisplaySnapshot;
@@ -463,6 +570,31 @@ For I := 0 To FSnapshot.DriverRecordsCount - 1 Do
 end;
 
 
+Procedure TForm1.DriverDevicesJumpOnEvent(Sender: TObject);
+Var
+  L : TListItem;
+  deviceAddress : Pointer;
+begin
+L := (Sender As TListView).Selected;
+If Assigned(L) Then
+  begin
+  deviceAddress := L.Data;
+  If Assigned(deviceAddress) Then
+    GotoDevice(deviceAddress);
+  end
+Else warningDialog('No device selected');
+end;
+
+Procedure TForm1.DriverDeviceTreePopupMenuPopup(Sender: TObject);
+Var
+  tn : TTreeNode;
+begin
+tn := DriverDeviceTreeView.Selected;
+Gotodriver1.Enabled := Assigned(tn);
+Expandall1.Enabled := Assigned(tn);
+Collapse1.Enabled := Assigned(tn);
+end;
+
 Procedure TForm1.DriverDeviceTreeViewChange(Sender: TObject; Node: TTreeNode);
 begin
 DriverTabSheet.TabVisible := (Node.Selected) And (Not Assigned(Node.Parent));
@@ -482,6 +614,30 @@ If Node.Selected Then
   Else If Assigned(Node.Data) Then
          DisplayDriverInfo(Node.Data);
   end;
+end;
+
+procedure TForm1.DriverJumpOnEvent(Sender: TObject);
+Var
+  driverAddress : Pointer;
+begin
+driverAddress := Pointer((Sender As TComponent).Tag);
+If Assigned(driverAddress) Then
+  GotoDriver(driverAddress);
+end;
+
+Procedure TForm1.DriverMajorFunctionJumpOnEvent(Sender: TObject);
+Var
+  L : TListItem;
+  driverAddress : Pointer;
+begin
+L := (Sender As TListView).Selected;
+If Assigned(L) Then
+  begin
+  driverAddress := L.Data;
+  If Assigned(driverAddress) Then
+    GotoDriver(driverAddress);
+  end
+Else WarningDialog('No item selected');
 end;
 
 Procedure TForm1.est1Click(Sender: TObject);
@@ -517,6 +673,7 @@ Var
   I, J : Integer;
   DevNode : PDeviceSnapshot;
   DeviceName : WideString;
+  driverAddress : Pointer;
 begin
 DriverMajorFunctionGroupBox.Visible := FDriverDisplaySettings.MajorFunction;
 If DriverMajorFunctionGroupBox.Visible Then
@@ -528,7 +685,13 @@ If DriverMajorFunctionGroupBox.Visible Then
       begin
       If (p >= NativeUInt(FDriverAddresses[J])) And
          (p < NativeUInt(FDriverAddresses[J]) + NativeUInt(FDriverSizes[J])) Then
+        begin
+        MajorFunctionListView.Items[I].Data := Nil;
+        If FImageBaseToDriverAddress.TryGetValue(FDriverAddresses[J], driverAddress) Then
+          MajorFunctionListView.Items[I].Data := driverAddress;
+
         MajorFunctionListview.Items[I].SubItems[0] := Format('%s', [FDriverNames[J]]);
+        end;
       end;
 
     MajorFunctionListview.Items[I].SubItems[1] := Format('0x%p', [Pointer(p)]);
@@ -551,7 +714,7 @@ If DriverDevicesGroupBox.Visible Then
       begin
       Caption := DeviceName;
       SubItems.Add(Format('0x%p', [ADriverRecord.Devices[I]]));
-      Data := DevNode;
+      Data := ADriverRecord.Devices[I];
       end;
     end;
   end;
@@ -559,7 +722,9 @@ If DriverDevicesGroupBox.Visible Then
 DriverDevicesListView.Items.EndUpdate;
 
 DriverAddressLEdit.Text := Format('0x%p', [ADriverRecord.Address]);
+DriverAddressLEdit.Tag := NativeInt(ADriverRecord.Address);
 DriverNameLEdit.Text := ADriverRecord.Name;
+DriverNameLEdit.Tag := NativeInt(ADriverRecord.Address);
 LabeledEdit1.Text := Format('0x%p', [ADriverRecord.ImageBase]);
 LabeledEdit2.Text := Format('%d', [ADriverRecord.ImageSize]);
 LabeledEdit3.Text := Format('0x%p', [ADriverRecord.DriverEntry]);
@@ -584,6 +749,9 @@ end;
 
 Procedure TForm1.DisplayMenuItemClick(Sender: TObject);
 Var
+  tn : TTreeNode;
+  objectAddress : Pointer;
+  objectIsDriver : Boolean;
   M : TMenuItem;
 begin
 M := Sender As TMenuItem;
@@ -617,21 +785,61 @@ Else If M.Parent = DeviceDisplayMenuItem Then
 
 If Assigned(FSnapshot) Then
   begin
+  tn := DriverDeviceTreeView.Selected;
+  If Assigned(tn) Then
+    begin
+    objectIsDriver := Not Assigned(tn.Parent);
+    If objectIsDriver Then
+      objectAddress := PDriverSnapshot(tn.Data).Address
+    Else objectAddress := PDeviceSnapshot(tn.Data).Address;
+    end
+  Else objectAddress := Nil;
+
+  FDriverAddressToTreeNode.Clear;
+  FDeviceAddressToTreeNode.Clear;
   DriverDeviceTreeView.Items.Clear;
+  FImageBaseToDriverAddress.Clear;
   DisplaySnapshot;
+  If Assigned(objectAddress) Then
+    begin
+    If objectIsDriver Then
+      GotoDriver(objectAddress, True)
+    Else GotoDevice(objectAddress, True);
+    end;
   end;
 end;
 
 Procedure TForm1.DisplayDeviceInfo(ADeviceRecord:PDeviceSnapshot);
 Var
-  I : Integer;
   DiskDevNode : PDeviceSnapshot;
   DiskDevName : WideString;
+
+Const
+  extensionFlagValues : Array [0..9] Of Cardinal = (
+    DOE_UNLOAD_PENDING,
+    DOE_DELETE_PENDING,
+    DOE_REMOVE_PENDING,
+    DOE_REMOVE_PROCESSED,
+    DOE_START_PENDING,
+    DOE_STARTIO_REQUESTED,
+    DOE_STARTIO_REQUESTED_BYKEY,
+    DOE_STARTIO_CANCELABLE,
+    DOE_STARTIO_DEFERRED,
+    DOE_STARTIO_NO_CANCEL);
+
+Var
+  I : Integer;
+  devCaps : TDeviceCapabilities;
+  extensionFlagCheckBoxes : Array [0..9] Of TCheckBox;
 begin
 Edit1.Text := Format('0x%p', [ADeviceRecord.Address]);
+Edit1.Tag := NativeInt(ADeviceRecord.Address);
 Edit2.Text := ADeviceRecord.Name;
+Edit2.Tag := NativeInt(ADeviceRecord.Address);
 Edit3.Text := Format('0x%p', [ADeviceRecord.DriverAddress]);
+Edit3.Tag := NativeInt(ADeviceRecord.DriverAddress);
 Edit4.Text := ADeviceRecord.DriverName;
+Edit4.Tag := NativeInt(ADeviceRecord.DriverAddress);
 Edit5.Text := Format('%d (%s)', [ADeviceRecord.DeviceType, DeviceTypeToStr(ADeviceRecord.DeviceType)]);
 Edit6.Text := Format('0x%x', [ADeviceRecord.Flags]);
 Edit7.Text := Format('0x%x', [ADeviceRecord.Characteristics]);
@@ -645,6 +853,13 @@ If Assigned(ADeviceRecord.DiskDeviceAddress) Then
 Else DiskDevName:= Format('<none> (0x%p)', [Nil]);
 
 Edit8.Text := DiskDevName;
+Edit8.Tag := NativeInt(ADeviceRecord.DiskDeviceAddress);
+
+CapabilitiesGroupBox.Visible := False;
+DevicePnPGroupBox.Visible := False;
+DeviceVPBGroupBox.Visible := False;
+DeviceCharacteristicsGroupBox.Visible := False;
+DeviceFlagsGroupBox.Visible := False;
 
 DeviceFlagsGroupBox.Visible := FDeviceDisplaySettings.Flags;
 If DeviceFlagsGroupBox.Visible Then
@@ -669,6 +884,19 @@ If DeviceFlagsGroupBox.Visible Then
   CheckBox30.Checked := (ADeviceRecord.Flags And DO_VOLUME_DEVICE_OBJECT) <> 0;
   CheckBox31.Checked := (ADeviceRecord.Flags And DO_SYSTEM_SYSTEM_PARTITION) <> 0;
   CheckBox32.Checked := (ADeviceRecord.Flags And DO_SYSTEM_CRITICAL_PARTITION) <> 0;
+
+  extensionFlagCheckBoxes[0] := CheckBox49;
+  extensionFlagCheckBoxes[1] := CheckBox52;
+  extensionFlagCheckBoxes[2] := CheckBox53;
+  extensionFlagCheckBoxes[3] := CheckBox50;
+  extensionFlagCheckBoxes[4] := CheckBox57;
+  extensionFlagCheckBoxes[5] := CheckBox54;
+  extensionFlagCheckBoxes[6] := CheckBox51;
+  extensionFlagCheckBoxes[7] := CheckBox56;
+  extensionFlagCheckBoxes[8] := CheckBox55;
+  extensionFlagCheckBoxes[9] := CheckBox58;
+  For I := Low(extensionFlagValues) To High(extensionFlagValues) Do
+    extensionFlagCheckBoxes[I].Checked := ((ADeviceRecord.ExtensionFlags And extensionFlagValues[I]) <> 0);
   end;
 
 DeviceCharacteristicsGroupBox.Visible := FDeviceDisplaySettings.Characteristics;
@@ -693,64 +921,114 @@ If ((ADeviceRecord.Flags And DO_BUS_ENUMERATED_DEVICE) <> 0) Then
   DevicePnPGroupBox.Visible := FDeviceDisplaySettings.PnP;
   If DevicePnPGroupBox.Visible Then
     begin
-    With DevicePnpListView Do
-      begin
-      Items[0].SubItems[0] := ADeviceRecord.DisplayName;
-      Items[1].SubItems[0] := ADeviceRecord.Description;
-      Items[2].SubItems[0] := ADeviceRecord.Vendor;
-      Items[3].SubItems[0] := ADeviceRecord.ClassName;
-      Items[4].SubItems[0] := ADeviceRecord.ClassGuid;
-      Items[5].SubItems[0] := ADeviceRecord.Location;
-      Items[6].SubItems[0] := ADeviceRecord.Enumerator;
-      Items[7].SubItems[0] := ADeviceRecord.DeviceId;
-      Items[8].SubItems[0] := ADeviceRecord.InstanceId;
-      end;
-    end;
+    DevicePnPListView.Clear;
+    DevicePnPListView.Items.BeginUpdate;
+    ListViewAddNameValue(DevicePnPListView, 'Description', ADeviceRecord.DisplayName);
+    ListViewAddNameValue(DevicePnPListView, 'Friendly name', ADeviceRecord.Description);
+    ListViewAddNameValue(DevicePnPListView, 'Manufacturer', ADeviceRecord.Vendor);
+    ListViewAddNameValue(DevicePnPListView, 'Class', ADeviceRecord.ClassName);
+    ListViewAddNameValue(DevicePnPListView, 'Class GUID', ADeviceRecord.ClassGuid);
+    ListViewAddNameValue(DevicePnPListView, 'Location', ADeviceRecord.Location);
+    ListViewAddNameValue(DevicePnPListView, 'Enumerator', ADeviceRecord.Enumerator);
+    If ADeviceRecord.DeviceId <> '' Then
+      ListViewAddNameValue(DevicePnPListView, 'Device ID', ADeviceRecord.DeviceId);
 
-  HardwareIDsGroupBox.Visible := (FDeviceDisplaySettings.HardwareId) And (Length(ADeviceRecord.HardwareIds) > 0);
-  If HardwareIDsGroupBox.Visible Then
-    begin
-    HardwareIDsListView.Items.BeginUpdate;
-    HardwareIDsListView.Clear;
-    For I := 0 To High(ADeviceRecord.HardwareIds) Do
+    ListViewAddNameValue(DevicePnPListView, 'Instance ID', ADeviceRecord.InstanceId);
+    If (FDeviceDisplaySettings.HardwareId) And (Length(ADeviceRecord.HardwareIds) > 0) Then
       begin
-      With HardwareIDsListView.Items.Add Do
-        Caption := ADeviceRecord.HardwareIds[I];
+      For I := 0 To High(ADeviceRecord.HardwareIds) Do
+        ListViewAddNameValue(DevicePnPListView, 'Hardware ID', ADeviceRecord.HardwareIds[I]);
       end;
 
-    HardwareIDsListView.Items.EndUpdate;
-    end;
-
-  CompatibleIDsGroupBox.Visible := (FDeviceDisplaySettings.CompatibleId) And (Length(ADeviceRecord.CompatibleIds) > 0);
-  If CompatibleIDsGroupBox.Visible Then
-    begin
-    CompatibleIDsListView.Items.BeginUpdate;
-    CompatibleIDsListView.Clear;
-    For I := 0 To High(ADeviceRecord.CompatibleIds) Do
+    If (FDeviceDisplaySettings.CompatibleId) And (Length(ADeviceRecord.CompatibleIds) > 0) Then
       begin
-      With CompatibleIDsListView.Items.Add Do
-        Caption := ADeviceRecord.CompatibleIds[I];
+      For I := 0 To High(ADeviceRecord.CompatibleIds) Do
+        ListViewAddNameValue(DevicePnPListView, 'Compatible ID', ADeviceRecord.CompatibleIds[I]);
       end;
 
-    CompatibleIDsListView.Items.EndUpdate;
+    If (FDeviceDisplaySettings.RemovalRelations) And (Length(ADeviceRecord.RemovalRelations) > 0) Then
+      DisplayDeviceRelations(ADeviceRecord.RemovalRelations, 'Removal');
+
+    If (FDeviceDisplaySettings.EjectRelations) And (Length(ADeviceRecord.EjectRelations) > 0) Then
+      DisplayDeviceRelations(ADeviceRecord.EjectRelations, 'Eject');
+
+    DevicePnPListView.Items.EndUpdate;
+    CapabilitiesGroupBox.Visible := (FDeviceDisplaySettings.Capabilities);
+    If CapabilitiesGroupBox.Visible Then
+      begin
+      devCaps := ADeviceRecord.Capabilities;
+      CapabilitiesListView.Clear;
+      CapabilitiesListView.Items.BeginUpdate;
+      If devCaps.DeviceD1 Then
+        ListViewAddNameValue(CapabilitiesListView, 'D1 state', Format('%u', [Ord(devCaps.DeviceD1)]));
+
+      If devCaps.DeviceD2 Then
+        ListViewAddNameValue(CapabilitiesListView, 'D2 state', Format('%u', [Ord(devCaps.DeviceD2)]));
+
+      If devCaps.LockSupported Then
+        ListViewAddNameValue(CapabilitiesListView, 'Lock supported', Format('%u', [Ord(devCaps.LockSupported)]));
+
+      If devCaps.EjectSupported Then
+        ListViewAddNameValue(CapabilitiesListView, 'Eject supported', Format('%u', [Ord(devCaps.EjectSupported)]));
+
+      If devCaps.Removable Then
+        ListViewAddNameValue(CapabilitiesListView, 'Removable', Format('%u', [Ord(devCaps.Removable)]));
+
+      If devCaps.DockDevice Then
+        ListViewAddNameValue(CapabilitiesListView, 'Dock device', Format('%u', [Ord(devCaps.DockDevice)]));
+
+      If devCaps.UniqueId Then
+        ListViewAddNameValue(CapabilitiesListView, 'UniqueId', Format('%u', [Ord(devCaps.UniqueId)]));
+
+      If devCaps.SilentInstall Then
+        ListViewAddNameValue(CapabilitiesListView, 'Silent install', Format('%u', [Ord(devCaps.SilentInstall)]));
+
+      If devCaps.RawDeviceOK Then
+        ListViewAddNameValue(CapabilitiesListView, 'Raw device OK', Format('%u', [Ord(devCaps.RawDeviceOK)]));
+
+      If devCaps.SurpriseRemovalOK Then
+        ListViewAddNameValue(CapabilitiesListView, 'Surprise removal', Format('%u', [Ord(devCaps.SurpriseRemovalOK)]));
+
+      If devCaps.WakeFromD0 Then
+        ListViewAddNameValue(CapabilitiesListView, 'Wake from D0', Format('%u', [Ord(devCaps.WakeFromD0)]));
+
+      If devCaps.WakeFromD1 Then
+        ListViewAddNameValue(CapabilitiesListView, 'Wake from D1', Format('%u', [Ord(devCaps.WakeFromD1)]));
+
+      If devCaps.WakeFromD2 Then
+        ListViewAddNameValue(CapabilitiesListView, 'Wake from D2', Format('%u', [Ord(devCaps.WakeFromD2)]));
+
+      If devCaps.WakeFromD3 Then
+        ListViewAddNameValue(CapabilitiesListView, 'Wake from D3', Format('%u', [Ord(devCaps.WakeFromD3)]));
+
+      If devCaps.HardwareDisabled Then
+        ListViewAddNameValue(CapabilitiesListView, 'HW disabled', Format('%u', [Ord(devCaps.HardwareDisabled)]));
+
+      If devCaps.NonDynamic Then
+        ListViewAddNameValue(CapabilitiesListView, 'Non-dynamic', Format('%u', [Ord(devCaps.NonDynamic)]));
+
+      If devCaps.WarmEjectSupported Then
+        ListViewAddNameValue(CapabilitiesListView, 'Warm eject', Format('%u', [Ord(devCaps.WarmEjectSupported)]));
+
+      If devCaps.NoDisplayInUI Then
+        ListViewAddNameValue(CapabilitiesListView, 'No display in UI', Format('%u', [Ord(devCaps.NoDisplayInUI)]));
+
+      ListViewAddNameValue(CapabilitiesListView, 'Address', Format('%u', [devCaps.Address]));
+      If Not devCaps.NoDisplayInUI Then
+        ListViewAddNameValue(CapabilitiesListView, 'UI number', Format('%u', [devCaps.UINumber]));
+
+      If devCaps.D1Latency <> 0 Then
+        ListViewAddNameValue(CapabilitiesListView, 'D1 latency', Format('%u ms', [devCaps.D1Latency Div 10]));
+
+      If devCaps.D2Latency <> 0 Then
+        ListViewAddNameValue(CapabilitiesListView, 'D2 latency', Format('%u ms', [devCaps.D2Latency Div 10]));
+
+      If devCaps.D3Latency <> 0 Then
+        ListViewAddNameValue(CapabilitiesListView, 'D3 latency', Format('%u ms', [devCaps.D3Latency Div 10]));
+
+      CapabilitiesListView.Items.EndUpdate;
+      end;
     end;
-
-  RemovalRelationsGroupBox.Visible := (FDeviceDisplaySettings.RemovalRelations) And (Length(ADeviceRecord.RemovalRelations) > 0);
-  If RemovalRelationsGroupBox.Visible Then
-    DisplayDeviceRelations(RemovalRelationsListView, ADeviceRecord.RemovalRelations);
-
-  EjectRelationsGroupBox.Visible := (FDeviceDisplaySettings.EjectRelations) And (Length(ADeviceRecord.EjectRelations) > 0);
-  If EjectRelationsGroupBox.Visible Then
-    DisplayDeviceRelations(EjectRelationsListView, ADeviceRecord.EjectRelations);
-
-  CapabilitiesGroupBox.Visible := (FDeviceDisplaySettings.Capabilities);
-  end
-Else begin
-  DevicePnPGroupBox.Visible := False;
-  HardwareIDsGroupBox.Visible := False;
-  CompatibleIDsGroupBox.Visible := False;
-  EjectRelationsGroupBox.Visible := False;
-  RemovalRelationsGroupBox.Visible := False;
   end;
 
 DisplayVPB(ADeviceRecord.Vpb);
@@ -775,7 +1053,7 @@ Else If Sender = LogDeviceSettingsChL Then
 
   If Not LogDeviceSettingsChL.Checked[10] Then
     begin
-    For I := 11 To 17 Do
+    For I := 11 To 25 Do
       LogDeviceSettingsChL.Checked[I] := False;
     end;
   end;
@@ -825,6 +1103,16 @@ FLogSettings.DeviceSettings.IncludeEnumerator := LogDeviceSettingsChL.Checked[14
 FLogSettings.DeviceSettings.IncludeLocation := LogDeviceSettingsChL.Checked[15];
 FLogSettings.DeviceSettings.IncludeClass := LogDeviceSettingsChL.Checked[16];
 FLogSettings.DeviceSettings.IncludeClassGuid := LogDeviceSettingsChL.Checked[17];
+FLogSettings.DeviceSettings.IncludeDeviceId := LogDeviceSettingsChL.Checked[18];
+FLogSettings.DeviceSettings.IncludeInstanceId := LogDeviceSettingsChL.Checked[19];
+FLogSettings.DeviceSettings.IncludeHardwareIDs := LogDeviceSettingsChL.Checked[20];
+FLogSettings.DeviceSettings.IncludeCompatibleIDs := LogDeviceSettingsChL.Checked[21];
+FLogSettings.DeviceSettings.IncludeDeviceCapabilities := LogDeviceSettingsChL.Checked[22];
+FLogSettings.DeviceSettings.IncludeRemovalRelations := LogDeviceSettingsChL.Checked[23];
+FLogSettings.DeviceSettings.IncludeEjectRelations := LogDeviceSettingsChL.Checked[24];
+FLogSettings.DeviceSettings.IncludeSecurity := LogDeviceSettingsChL.Checked[25];
+FLogSettings.DeviceSettings.IncludeExtensionFlags := LogDeviceSettingsChL.Checked[26];
+FLogSettings.DeviceSettings.IncludeExtensionFlagsStr := LogDeviceSettingsChL.Checked[27];
 end;
 
 Procedure TForm1.DisplayVPB(AVPB:PVPBSnapshot);
@@ -843,13 +1131,19 @@ If DeviceVPBGroupBox.Visible Then
   FSDeviceName := '<unknown>';
   FSDevice := FSnapshot.GetDeviceByAddress(AVPB.FileSystemDevice);
   If Assigned(FSDevice) Then
-    LabeledEdit8.Text := Format('%s (0x%p)', [FSDevice.Name, FSDevice.Address]);
+    LabeledEdit8.Text := Format('%s (0x%p)', [FSDevice.Name, FSDevice.Address])
+  Else If Assigned(AVPB.FileSystemDevice) Then
+    LabeledEdit8.Text := Format('<unknown> (0x%p)', [AVPB.FileSystemDevice]);
 
+  LabeledEdit8.Tag := NativeInt(AVPB.FileSystemDevice);
   VolDeviceName := '<unknown>';
   VolDevice := FSnapshot.GetDeviceByAddress(AVPB.VolumeDevice);
   If Assigned(VolDevice) Then
-    LabeledEdit9.Text := Format('%s (0x%p)', [VolDevice.Name, VolDevice.Address]);
+    LabeledEdit9.Text := Format('%s (0x%p)', [VolDevice.Name, VolDevice.Address])
+  Else If Assigned(AVPB.VolumeDevice) Then
+    LabeledEdit9.Text := Format('<unknown> (0x%p)', [AVPB.VolumeDevice]);
 
+  LabeledEdit9.Tag := NativeInt(AVPB.VolumeDevice);
   LabeledEdit10.Text := AVPB.Name;
   CheckBox43.Checked := (AVPB.Flags And VPB_MOUNTED) > 0;
   CheckBox44.Checked := (AVPB.Flags And VPB_LOCKED) > 0;
@@ -860,14 +1154,13 @@ If DeviceVPBGroupBox.Visible Then
   end;
 end;
 
-Procedure TForm1.DisplayDeviceRelations(ATargetListView:TListView; ARelations:Array Of Pointer);
+Procedure TForm1.DisplayDeviceRelations(ARelations:Array Of Pointer; ARelationName:WideString);
 Var
   I : Integer;
   ds : PDeviceSnapshot;
   deviceName : WideString;
   drivername : WideString;
 begin
-ATargetListView.Clear;
 For I := Low(ARelations) To High(ARelations) Do
   begin
   ds := FSnapshot.GetDeviceByAddress(ARelations[I]);
@@ -884,14 +1177,59 @@ For I := Low(ARelations) To High(ARelations) Do
     driverName := '<unknown>';
     end;
 
-  With ATargetListView.Items.Add Do
-    begin
-    Caption := deviceName;
-    SubItems.Add(driverName);
-    SubItems.Add(Format('0x%p', [ARelations[I]]));
-    end;
+  ListViewAddNameValue(DevicePnPListView, ARelationName, Format('%s (0x%p)', [deviceName, ARelations[I]]), ARelations[I]);
   end;
 end;
+
+
+Procedure TForm1.GoToDriver(AAddress:Pointer; AIgnoreIfNonexistent:Boolean = False);
+Var
+  tn : TTreeNode;
+begin
+If FDriverAddressToTreeNode.TryGetValue(AAddress, tn) Then
+  begin
+  DriverDeviceTreeView.SetFocus;
+  DriverDeviceTreeView.Selected := tn;
+  end
+Else If Not AIgnoreIfNonexistent Then
+  WarningDialog('No tree node found for the driver');
+end;
+
+Procedure TForm1.Gotodriver1Click(Sender: TObject);
+Var
+  driverSnapshot : PDriverSnapshot;
+  deviceSnapshot : PDeviceSnapshot;
+  tn : TTreeNode;
+begin
+tn := DriverDeviceTreeView.Selected;
+If Assigned(tn) Then
+  begin
+  If Assigned(tn.Parent) Then
+    begin
+    deviceSnapshot := tn.Data;
+    GotoDriver(deviceSnapshot.DriverAddress);
+    end
+  Else begin
+    driverSnapshot := tn.Data;
+    GotoDriver(driverSnapshot.Address);
+    end;
+  end
+Else WarningDialog('No item selected');
+end;
+
+Procedure TForm1.GoToDevice(AAddress:Pointer; AIgnoreIfNonexistent:Boolean = False);
+Var
+  tn : TTreeNode;
+begin
+If FDeviceAddressToTreeNode.TryGetValue(AAddress, tn) Then
+  begin
+  DriverDeviceTreeView.SetFocus;
+  DriverDeviceTreeView.Selected := tn;
+  end
+Else If Not AIgnoreIfNonexistent Then
+  WarningDialog('No tree node found for the device');
+end;
+
 
 End.
 

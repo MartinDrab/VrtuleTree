@@ -162,6 +162,43 @@ Const
   VPB_RAW_MOUNT             =      $00000010;
   VPB_DIRECT_WRITES_ALLOWED =      $00000020;
 
+  // Device object extension flags
+  DOE_UNLOAD_PENDING             = $00000001;
+  DOE_DELETE_PENDING             = $00000002;
+  DOE_REMOVE_PENDING             = $00000004;
+  DOE_REMOVE_PROCESSED           = $00000008;
+  DOE_START_PENDING              = $00000010;
+  DOE_STARTIO_REQUESTED          = $00000020;
+  DOE_STARTIO_REQUESTED_BYKEY    = $00000040;
+  DOE_STARTIO_CANCELABLE         = $00000080;
+  DOE_STARTIO_DEFERRED           = $00000100;  // Use non-recursive startio
+  DOE_STARTIO_NO_CANCEL          = $00000200;  // Pass non-cancelable IRP to startio
+
+
+  // Device extension power flags
+
+
+  // Device capabilities
+  DEVCAP_DEVICE_D1              = $1;
+  DEVCAP_DEVICE_D2              = $2;
+  DEVCAP_LOCK_SUPPORTED         = $4;
+  DEVCAP_EJECT_SUPPORTED        = $8;
+  DEVCAP_REMOVABLE              = $10;
+  DEVCAP_DOCK_DEVICE            = $20;
+  DEVCAP_UNIQUE_ID              = $40;
+  DEVCAP_SILENT_INSTALL         = $80;
+  DEVCAP_RAW_DEVICE_OK          = $100;
+  DEVCAP_SURPRISE_REMOVAL_OK    = $200;
+  DEVCAP_WAKE_FROM_D0           = $400;
+  DEVCAP_WAKE_FROM_D1           = $800;
+  DEVCAP_WAKE_FROM_D2           = $1000;
+  DEVCAP_WAKE_FROM_D3           = $2000;
+  DEVCAP_HARDWARE_DISABLED      = $4000;
+  DEVCAP_NON_DYNAMIC            = $8000;
+  DEVCAP_WARM_EJECT_SUPPORTED   = $10000;
+  DEVCAP_NO_DISPLAY_IN_UI       = $20000;
+
+
 
 Function IrpMajorToStr(AMajor:ULONG):WideString;
 Function DriverFlagsToStr(AFlags:Cardinal):WideString;
@@ -171,6 +208,10 @@ Function DeviceFlagToStr(AFlag:Cardinal):WideString;
 Function DeviceCharacteristicToStr(AChar:Cardinal):WideString;
 Function DeviceCharacteristicsToStr(AChars:Cardinal):WideString;
 Function DeviceTypeToStr(ADeviceType:Cardinal):WideString;
+Function DeviceExtensionFlagsToStr(AFlags:Cardinal):WideString;
+Function DeviceExtensionFlagToStr(AFlag:Cardinal):WideString;
+Function DeviceIDListToStr(AIDList : Array Of WideString):WideString;
+Function DeviceRelationsToStr(AArray : Array Of Pointer):WideString;
 
 Implementation
 
@@ -215,6 +256,40 @@ CharArray[9] := FILE_CHARACTERISTIC_PNP_DEVICE;
 CharArray[10] := FILE_CHARACTERISTIC_TS_DEVICE;
 CharArray[11] := FILE_CHARACTERISTIC_WEBDAV_DEVICE;
 Result := _FlagsToStr(CharArray, AChars, DeviceCharacteristicToStr);
+end;
+
+Function DeviceExtensionFlagsToStr(AFlags:Cardinal):WideString;
+Var
+  eflagArray : Array [0..9] OF Cardinal;
+begin
+eflagArray[0] := DOE_UNLOAD_PENDING;
+eflagArray[1] := DOE_DELETE_PENDING;
+eflagArray[2] := DOE_REMOVE_PENDING;
+eflagArray[3] := DOE_REMOVE_PROCESSED;
+eflagArray[4] := DOE_START_PENDING;
+eflagArray[5] := DOE_STARTIO_REQUESTED;
+eflagArray[6] := DOE_STARTIO_REQUESTED_BYKEY;
+eflagArray[7] := DOE_STARTIO_CANCELABLE;
+eflagArray[8] := DOE_STARTIO_DEFERRED;
+eflagArray[9] := DOE_STARTIO_NO_CANCEL;
+Result := _FlagsToStr(eflagArray, AFlags, DeviceExtensionFlagToStr);
+end;
+
+Function DeviceExtensionFlagToStr(AFlag:Cardinal):WideString;
+begin
+Case AFlag Of
+  DOE_UNLOAD_PENDING : Result := 'DOE_UNLOAD_PENDING';
+  DOE_DELETE_PENDING : Result := 'DOE_DELETE_PENDING';
+  DOE_REMOVE_PENDING : Result := 'DOE_REMOVE_PENDING';
+  DOE_REMOVE_PROCESSED : Result := 'DOE_REMOVE_PROCESSED';
+  DOE_START_PENDING : Result := 'DOE_START_PENDING';
+  DOE_STARTIO_REQUESTED : Result := 'DOE_STARTIO_REQUESTED';
+  DOE_STARTIO_REQUESTED_BYKEY : Result := 'DOE_STARTIO_REQUESTED_BYKEY';
+  DOE_STARTIO_CANCELABLE : Result := 'DOE_STARTIO_CANCELABLE';
+  DOE_STARTIO_DEFERRED : Result := 'DOE_STARTIO_DEFERRED';
+  DOE_STARTIO_NO_CANCEL : Result := 'DOE_STARTIO_NO_CANCEL';
+  Else Result := '';
+  end;
 end;
 
 Function DeviceFlagsToStr(AFlags:Cardinal):WideString;
@@ -352,7 +427,7 @@ Case AMajor Of
   IRP_MJ_SYSTEM_CONTROL : Result := 'SystemControl';
   IRP_MJ_DEVICE_CHANGE : Result := 'DeviceChange';
   IRP_MJ_QUERY_QUOTA : Result := 'QueryQuota';
-  IRP_MJ_SET_QUOTA : Result := 'setQuota';
+  IRP_MJ_SET_QUOTA : Result := 'SetQuota';
   IRP_MJ_PNP : Result := 'Pnp';
   end;
 end;
@@ -430,6 +505,32 @@ Case ADeviceType Of
   Else Result := '<unknown>';
   end;
 end;
+
+Function DeviceIDListToStr(AIDList : Array Of WideString):WideString;
+Var
+  I : Integer;
+begin
+Result := '';
+For I := Low(AIDList) To High(AIDList) Do
+  Result := Format('%s, ', [AIDList[I]]);
+
+If Result <> '' Then
+  System.Delete(Result, Length(Result) - 1, 2);
+end;
+
+Function DeviceRelationsToStr(AArray : Array Of Pointer):WideString;
+Var
+  I : Integer;
+begin
+Result := '';
+For I := Low(AArray) To High(AArray) Do
+  Result := Format('0x%p, ', [AArray[I]]);
+
+  If Result <> '' Then
+  System.Delete(Result, Length(Result) - 1, 2);
+end;
+
+
 
 End.
 

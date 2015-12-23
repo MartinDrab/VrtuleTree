@@ -15,7 +15,7 @@
 
 /** Creates Driver List structure that describes a list of drivers in the
  *  snapshot. On input, the routine accepts DRIVER_OBJECT structures of the
- *  drivers it should include into the snapshot.
+ *  drivers it should include within the snapshot.
  *
  *  @param DriverArrays An array of arrays of PDRIVER_OBJECT pointers. For
  *  example, every array of the pointers might contain Driver Objects from
@@ -30,46 +30,46 @@
  *  @return Returns NTSTATUS value indicating either success or failure of
  *  the operation.
  */
-static NTSTATUS _DriverListNodeCreate(PDRIVER_OBJECT **DriverArrays, PSIZE_T ArrayLengths, SIZE_T ItemCount, PSNAPSHOT_DRIVERLIST *DriverList)
+static NTSTATUS _DriverListNodeCreate(_In_ PDRIVER_OBJECT **DriverArrays, _In_ PSIZE_T ArrayLengths, _In_ SIZE_T ItemCount, _Out_ PSNAPSHOT_DRIVERLIST *DriverList)
 {
-   LONG i = 0;
-   ULONG_PTR DriverCount = 0;
-   PSNAPSHOT_DRIVERLIST TmpDriverList = NULL;
-   SIZE_T DriverListSize = 0;
-   NTSTATUS Status = STATUS_UNSUCCESSFUL;
-   DEBUG_ENTER_FUNCTION("DriverArrays=0x%p; ArrayLengths=0x%p; ItemCount=%u; DriverList=0x%p", DriverArrays, ArrayLengths, ItemCount, DriverList);
+	SIZE_T i = 0;
+	ULONG_PTR driverCount = 0;
+	PSNAPSHOT_DRIVERLIST tmpDriverList = NULL;
+	SIZE_T driverListSize = 0;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	DEBUG_ENTER_FUNCTION("DriverArrays=0x%p; ArrayLengths=0x%p; ItemCount=%u; DriverList=0x%p", DriverArrays, ArrayLengths, ItemCount, DriverList);
 
-   *DriverList = NULL;
-   // Compute the total number of Driver Object pointers stored inside
-   // the arrays
-   for (i = 0; i < ItemCount; ++i) 
-      DriverCount += ArrayLengths[i];
+	*DriverList = NULL;
+	// Compute the total number of Driver Object pointers stored inside
+	// the arrays
+	for (i = 0; i < ItemCount; ++i) 
+	   driverCount += ArrayLengths[i];
    
-   // Compute the total size of the new Driver List structure and allocate
-   // storage for it. 
-   DriverListSize = sizeof(SNAPSHOT_DRIVERLIST) + DriverCount * sizeof(PVOID);
-   TmpDriverList = (PSNAPSHOT_DRIVERLIST)HeapMemoryAllocPaged(DriverListSize);
-   if (TmpDriverList != NULL) {
-      PDRIVER_OBJECT *Data = NULL;
+	// Compute the total size of the new Driver List structure and allocate
+	// storage for it. 
+	driverListSize = sizeof(SNAPSHOT_DRIVERLIST) + driverCount * sizeof(PVOID);
+	tmpDriverList = (PSNAPSHOT_DRIVERLIST)HeapMemoryAllocPaged(driverListSize);
+	if (tmpDriverList != NULL) {
+		PDRIVER_OBJECT *oneDriverArray = NULL;
       
-      // Initialize the structure
-      TmpDriverList->Size = DriverListSize;
-      TmpDriverList->NumberOfDrivers = DriverCount;
-      TmpDriverList->DriversOffset = sizeof(SNAPSHOT_DRIVERLIST);
-      Data = (PDRIVER_OBJECT *)((PUCHAR)TmpDriverList + TmpDriverList->DriversOffset);
-      // Copy addresses of Driver Objects from the arrays
-      for (i = 0; i < ItemCount; ++i) {
-         RtlCopyMemory(Data, DriverArrays[i], ArrayLengths[i] * sizeof(PDRIVER_OBJECT));
-         Data += ArrayLengths[i];
-      }
+		// Initialize the structure
+		tmpDriverList->Size = driverListSize;
+		tmpDriverList->NumberOfDrivers = driverCount;
+		tmpDriverList->DriversOffset = sizeof(SNAPSHOT_DRIVERLIST);
+		oneDriverArray = (PDRIVER_OBJECT *)((PUCHAR)tmpDriverList + tmpDriverList->DriversOffset);
+		// Copy addresses of Driver Objects from the arrays
+		for (i = 0; i < ItemCount; ++i) {
+			memcpy(oneDriverArray, DriverArrays[i], ArrayLengths[i] * sizeof(PDRIVER_OBJECT));
+			oneDriverArray += ArrayLengths[i];
+		}
 
-      // Report success and fill the output argument
-      Status = STATUS_SUCCESS;
-      *DriverList = TmpDriverList;
-   } else Status = STATUS_INSUFFICIENT_RESOURCES;
+		// Report success and fill the output argument
+		status = STATUS_SUCCESS;
+		*DriverList = tmpDriverList;
+	} else status = STATUS_INSUFFICIENT_RESOURCES;
 
-   DEBUG_EXIT_FUNCTION("0x%x, *DriverList=0x%p", Status, *DriverList);
-   return Status;
+	DEBUG_EXIT_FUNCTION("0x%x, *DriverList=0x%p", status, *DriverList);
+	return status;
 }
 
 
@@ -101,78 +101,47 @@ static NTSTATUS _DriverListNodeCreate(PDRIVER_OBJECT **DriverArrays, PSIZE_T Arr
  *  @remark If the registry does not contain certain data in the registry,
  *  the routine fills the corresponding parameter with NULL.
  */
-static NTSTATUS _GetDevicePnPInformation(PDEVICE_OBJECT DeviceObject, PWCHAR *DisplayName,
-   PWCHAR *Description, PWCHAR *VendorName, PWCHAR *Enumerator, PWCHAR *ClassName, PWCHAR *ClassGuid, PWCHAR *Location)
+static NTSTATUS _GetDevicePnPInformation(_In_ PDEVICE_OBJECT DeviceObject, _Out_ PWCHAR *DisplayName, _Out_ PWCHAR *Description, _Out_ PWCHAR *VendorName, _Out_ PWCHAR *Enumerator, _Out_ PWCHAR *ClassName, _Out_ PWCHAR *ClassGuid, _Out_ PWCHAR *Location)
 {
-   ULONG VendorNameLength = 0;
-   ULONG DisplayNameLength = 0;
-   ULONG DescriptionLength = 0;
-   ULONG ClassLength = 0;
-   ULONG EnumeratorLength = 0;
-   ULONG LocationLength = 0;
-   ULONG ClassGuidLength = 0;
-   NTSTATUS Status = STATUS_UNSUCCESSFUL;
-   DEBUG_ENTER_FUNCTION("DeviceObject=0x%p", DeviceObject);
+	ULONG i = 0;
+	DEVICE_REGISTRY_PROPERTY devicePropertyTypes[] = {
+		DevicePropertyClassName,
+		DevicePropertyDeviceDescription,
+		DevicePropertyFriendlyName,
+		DevicePropertyManufacturer,
+		DevicePropertyLocationInformation,
+		DevicePropertyEnumeratorName,
+		DevicePropertyClassGuid,
+	};
+	PWCHAR *devicePropertyBuffers[] = {
+		ClassName,
+		Description,
+		DisplayName,
+		VendorName,
+		Location,
+		Enumerator,
+		ClassGuid,
+	};
+	ULONG devicePropertyLengths[sizeof(devicePropertyBuffers) / sizeof(PWCHAR *)];
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	DEBUG_ENTER_FUNCTION("DeviceObject=0x%p", DeviceObject);
 
-   Status = _GetWCharDeviceProperty(DeviceObject, DevicePropertyClassName, ClassName, &ClassLength);
-   if (NT_SUCCESS(Status)) {
-      Status = _GetWCharDeviceProperty(DeviceObject, DevicePropertyDeviceDescription, Description, &DescriptionLength);
-      if (NT_SUCCESS(Status)) {
-         Status = _GetWCharDeviceProperty(DeviceObject, DevicePropertyFriendlyName, DisplayName, &DisplayNameLength);
-         if (NT_SUCCESS(Status)) {
-            Status = _GetWCharDeviceProperty(DeviceObject, DevicePropertyManufacturer, VendorName, &VendorNameLength);
-            if (NT_SUCCESS(Status)) {
-               Status = _GetWCharDeviceProperty(DeviceObject, DevicePropertyLocationInformation, Location, &LocationLength);
-               if (NT_SUCCESS(Status)) {
-                  Status = _GetWCharDeviceProperty(DeviceObject, DevicePropertyEnumeratorName, Enumerator, &EnumeratorLength);
-                  if (NT_SUCCESS(Status)) {
-                     Status = _GetWCharDeviceProperty(DeviceObject, DevicePropertyClassGuid, ClassGuid, &ClassGuidLength);
-				  }
-               }
-            }
-         }
-      }
-   }
+	for (i = 0; i < sizeof(devicePropertyBuffers) / sizeof(PWCHAR *); ++i) {
+		status = _GetWCharDeviceProperty(DeviceObject, devicePropertyTypes[i], devicePropertyBuffers[i], &devicePropertyLengths[i]);
+		if (!NT_SUCCESS(status)) {
+			ULONG j = 0;
 
-   if (!NT_SUCCESS(Status)) {
-      if (*Enumerator != NULL) {
-         HeapMemoryFree(*Enumerator);
-         *Enumerator = NULL;
-      }
+			for (j = 0; j < i; ++j) {
+				if (*(devicePropertyBuffers[j]) != NULL)
+					HeapMemoryFree(*(devicePropertyBuffers[j]));
+			}
 
-      if (*Location != NULL) {
-         HeapMemoryFree(*Location);
-         *Location = NULL;
-      }
+			break;
+		}
+	}
 
-      if (*DisplayName != NULL) {
-         HeapMemoryFree(*DisplayName);
-         *DisplayName = NULL;
-      }
-
-      if (*VendorName != NULL) {
-         HeapMemoryFree(*VendorName);
-         *VendorName = NULL;
-      }
-
-      if (*Description != NULL) {
-         HeapMemoryFree(*Description);
-         *Description = NULL;
-      }
-
-      if (*ClassName != NULL) {
-         HeapMemoryFree(*ClassName);
-         *ClassName = NULL;
-      }
-
-      if (*ClassGuid != NULL) {
-         HeapMemoryFree(*ClassGuid);
-         *ClassGuid = NULL;
-      }
-   }
-
-   DEBUG_EXIT_FUNCTION("0x%x", Status);
-   return Status;
+	DEBUG_EXIT_FUNCTION("0x%x", status);
+	return status;
 }
 
 
@@ -190,28 +159,44 @@ static NTSTATUS _GetDevicePnPInformation(PDEVICE_OBJECT DeviceObject, PWCHAR *Di
  *  of offset to the string relative to beginning of the record. The variable is
  *  updated to contain correct data.
  */
-static VOID _CopyString(PWCHAR String, PVOID Record, PUCHAR *DataStart, PULONG_PTR OffsetField)
+static VOID _CopyString(_In_opt_ PWCHAR String, _In_ PVOID Record, _Inout_ PUCHAR *DataStart, _Inout_ PULONG_PTR OffsetField)
 {
-   SIZE_T StrLength = 0;
-   DEBUG_ENTER_FUNCTION("String=\"%S\"; Record=0x%p; DataStart=0x%p; OffsetField=0x%p", String, Record, DataStart, OffsetField);
+	SIZE_T strLength = 0;
+	DEBUG_ENTER_FUNCTION("String=\"%S\"; Record=0x%p; DataStart=0x%p; OffsetField=0x%p", String, Record, DataStart, OffsetField);
 
-   if (String != NULL)
-      StrLength = wcslen(String);
+	if (String != NULL)
+		strLength = wcslen(String);
 
-   *OffsetField = (ULONG_PTR)*DataStart - (ULONG_PTR)Record;
-   RtlCopyMemory(*DataStart, String, StrLength * sizeof(WCHAR));
-   ((PWCHAR)(*DataStart))[StrLength] = L'\0';
-   *DataStart += (StrLength + 1) * sizeof(WCHAR);
+	*OffsetField = (ULONG_PTR)*DataStart - (ULONG_PTR)Record;
+	memcpy(*DataStart, String, strLength * sizeof(WCHAR));
+	((PWCHAR)(*DataStart))[strLength] = L'\0';
+	*DataStart += (strLength + 1) * sizeof(WCHAR);
 
-   DEBUG_EXIT_FUNCTION_VOID();
-   return;
+	DEBUG_EXIT_FUNCTION_VOID();
+	return;
 }
+
 
 /************************************************************************/
 /* VPB SNAPSHOT                                                         */
 /************************************************************************/
 
-static NTSTATUS _GetDeviceVpbInfo(PDEVICE_OBJECT DeviceObject, PSNAPSHOT_VPB_INFO *VpbSnapshot)
+
+/** Extracts information from Volume Parameter Block of a given device object.
+ *
+ *  @param DeviceObject The device object VPB of which will be examined.
+ *  @param VpbSnapshot Address of variable that receives address of a newly allocated
+ *  @link(SNAPSHOT_VPB_INFO) structure filled with VPB-related information.
+ *
+ *  @return
+ *  NTSTATUS value.
+ *
+ *  @remark
+ *  The routine uses the VPB spin lock to access the Volume Parameter Block in a correct way.
+ *
+ *  The @link(_FreeDeviceVpbInfo) routine must be used to free the structure returned in the second argument.
+ */
+static NTSTATUS _GetDeviceVpbInfo(_In_ PDEVICE_OBJECT DeviceObject, _Out_ PSNAPSHOT_VPB_INFO *VpbSnapshot)
 {
 	KIRQL irql;
 	PVPB vpb = NULL;
@@ -228,14 +213,14 @@ static NTSTATUS _GetDeviceVpbInfo(PDEVICE_OBJECT DeviceObject, PSNAPSHOT_VPB_INF
 		tmpVpb = (PSNAPSHOT_VPB_INFO)HeapMemoryAllocNonPaged(allocLength);
 		if (tmpVpb != NULL) {
 			RtlZeroMemory(tmpVpb, allocLength);
-			tmpVpb->Size = allocLength;
+			tmpVpb->Size = (ULONG)allocLength;
 			tmpVpb->FileSystemDeviceObject = vpb->DeviceObject;
 			tmpVpb->Flags = vpb->Flags;
 			tmpVpb->ReferenceCount = vpb->ReferenceCount;
             tmpVpb->SerialNumber = vpb->SerialNumber;
             tmpVpb->VolumeDeviceObject = vpb->RealDevice;
             tmpVpb->VolumeLabel = sizeof(SNAPSHOT_VPB_INFO);
-            RtlCopyMemory((PUCHAR)tmpVpb + tmpVpb->VolumeLabel, &vpb->VolumeLabel, vpb->VolumeLabelLength);
+            memcpy((PUCHAR)tmpVpb + tmpVpb->VolumeLabel, &vpb->VolumeLabel, vpb->VolumeLabelLength);
             *VpbSnapshot = tmpVpb;
             status = STATUS_SUCCESS;
 		} else status = STATUS_INSUFFICIENT_RESOURCES;
@@ -247,17 +232,23 @@ static NTSTATUS _GetDeviceVpbInfo(PDEVICE_OBJECT DeviceObject, PSNAPSHOT_VPB_INF
    return status;
 }
 
-static VOID _FreeDeviceVpbInfo(PSNAPSHOT_VPB_INFO Info)
+
+/** Frees a given @link(SNAPSHOT_VPB_INFO) structure allocatd by a call to @link(_GetDeviceVpbInfo) routine.
+ *
+ *  @param Info The structure to free.
+ */
+static VOID _FreeDeviceVpbInfo(_Inout_ PSNAPSHOT_VPB_INFO Info)
 {
-   DEBUG_ENTER_FUNCTION("Info=0x%p", Info);
+	DEBUG_ENTER_FUNCTION("Info=0x%p", Info);
 
-   HeapMemoryFree(Info);
+	HeapMemoryFree(Info);
 
-   DEBUG_EXIT_FUNCTION_VOID();
-   return;
+	DEBUG_EXIT_FUNCTION_VOID();
+	return;
 }
 
-static NTSTATUS _GetDeviceRelationsInfo(PDEVICE_OBJECT DeviceObject, DEVICE_RELATION_TYPE RelationType, PSNAPSHOT_DEVICE_RELATIONS_INFO *Info)
+
+static NTSTATUS _GetDeviceRelationsInfo(_In_ PDEVICE_OBJECT DeviceObject, _In_ DEVICE_RELATION_TYPE RelationType, _Out_ PSNAPSHOT_DEVICE_RELATIONS_INFO *Info)
 {
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
 	PSNAPSHOT_DEVICE_RELATIONS_INFO tmpInfo = NULL;
@@ -290,12 +281,14 @@ static NTSTATUS _GetDeviceRelationsInfo(PDEVICE_OBJECT DeviceObject, DEVICE_RELA
 	return status;
 }
 
-static SIZE_T _GetStringSize(PWCHAR String)
+
+static SIZE_T _GetStringSize(_In_opt_ PWCHAR String)
 {
 	return (String != NULL ? wcslen(String)*sizeof(WCHAR) : 0);
 }
 
-static SIZE_T _GetMultiStringSize(PWCHAR MultiString)
+
+static SIZE_T _GetMultiStringSize(_In_opt_ PWCHAR MultiString)
 {
 	SIZE_T ret = 0;
 	SIZE_T partlen = 0;
@@ -311,7 +304,8 @@ static SIZE_T _GetMultiStringSize(PWCHAR MultiString)
 	return ret;
 }
 
-static NTSTATUS _GetDeviceAdvancedPnPInfo(PDEVICE_OBJECT DeviceObject, PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO *Info)
+
+static NTSTATUS _GetDeviceAdvancedPnPInfo(_In_ ULONG SnapshotFlags, _In_ PDEVICE_OBJECT DeviceObject, _Out_ PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO *Info)
 {
 	PWCHAR deviceId = NULL;
 	PWCHAR instanceId = NULL;
@@ -321,9 +315,11 @@ static NTSTATUS _GetDeviceAdvancedPnPInfo(PDEVICE_OBJECT DeviceObject, PSNAPSHOT
 	PSNAPSHOT_DEVICE_RELATIONS_INFO removalRelations = NULL;
 	PSNAPSHOT_DEVICE_RELATIONS_INFO ejectRelations = NULL;
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
-	DEBUG_ENTER_FUNCTION("DeviceObject=0x%p; Info=0x%p", DeviceObject, Info);
+	DEBUG_ENTER_FUNCTION("SnapshotFlags=0x%x; DeviceObject=0x%p; Info=0x%p", SnapshotFlags, DeviceObject, Info);
 
-	UtilsQueryDeviceId(DeviceObject, BusQueryDeviceID, &deviceId);
+	if (SnapshotFlags & VTREE_SNAPSHOT_DEVICE_ID)
+		UtilsQueryDeviceId(DeviceObject, BusQueryDeviceID, &deviceId);
+	
 	UtilsQueryDeviceId(DeviceObject, BusQueryInstanceID, &instanceId);
 	UtilsQueryDeviceId(DeviceObject, BusQueryHardwareIDs, &hardwareIds);
 	UtilsQueryDeviceId(DeviceObject, BusQueryCompatibleIDs, &compatibleIds);
@@ -397,7 +393,8 @@ static NTSTATUS _GetDeviceAdvancedPnPInfo(PDEVICE_OBJECT DeviceObject, PSNAPSHOT
 	return status;
 }
 
-static VOID _FreeAdvancedPnPInfo(PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO Info)
+
+static VOID _FreeAdvancedPnPInfo(_Inout_ PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO Info)
 {
 	DEBUG_ENTER_FUNCTION("Info=0x%p", Info);
 
@@ -413,7 +410,8 @@ static VOID _FreeAdvancedPnPInfo(PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO Info)
 	return;
 }
 
-static NTSTATUS _SecurityInfoCreate(PDEVICE_OBJECT DeviceObject, PSECURITY_DESCRIPTOR *Info)
+
+static NTSTATUS _SecurityInfoCreate(_In_ PDEVICE_OBJECT DeviceObject, _Out_ PSECURITY_DESCRIPTOR *Info)
 {
 	BOOLEAN allocated = FALSE;
 	ULONG sdLen = 0;
@@ -440,7 +438,8 @@ static NTSTATUS _SecurityInfoCreate(PDEVICE_OBJECT DeviceObject, PSECURITY_DESCR
 	return status;
 }
 
-static VOID _SecurityInfoFree(PSECURITY_DESCRIPTOR Info)
+
+static VOID _SecurityInfoFree(_In_ PSECURITY_DESCRIPTOR Info)
 {
 	DEBUG_ENTER_FUNCTION("Info=0x%p", Info);
 
@@ -449,6 +448,7 @@ static VOID _SecurityInfoFree(PSECURITY_DESCRIPTOR Info)
 	DEBUG_EXIT_FUNCTION_VOID();
 	return;
 }
+
 
 /** Creates Device Info record that contains information about a device object
  *  within the snapshot.
@@ -459,38 +459,38 @@ static VOID _SecurityInfoFree(PSECURITY_DESCRIPTOR Info)
  *  receives address of the newly allocated and initialized Device Info 
  *  structure. When the routine fails, the variable is filled with NULL.
  */
-static NTSTATUS _DeviceInfoSnapshotCreate(PDEVICE_OBJECT DeviceObject, PSNAPSHOT_DEVICE_INFO *DeviceInfo)
+static NTSTATUS _DeviceInfoSnapshotCreate(_In_ ULONG SnapshotFlags, _In_ PDEVICE_OBJECT DeviceObject, _Out_ PSNAPSHOT_DEVICE_INFO *DeviceInfo)
 {
-	UNICODE_STRING DeviceName;
-	PSNAPSHOT_DEVICE_INFO TmpDeviceInfo = NULL;
-	NTSTATUS Status = STATUS_UNSUCCESSFUL;
-	DEBUG_ENTER_FUNCTION("DeviceObject=0x%p; DeviceInfo=0x%p", DeviceObject, *DeviceInfo);
+	UNICODE_STRING uDeviceName;
+	PSNAPSHOT_DEVICE_INFO tmpDeviceInfo = NULL;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	DEBUG_ENTER_FUNCTION("SnapshotFlags=0x%x; DeviceObject=0x%p; DeviceInfo=0x%p", SnapshotFlags, DeviceObject, *DeviceInfo);
 
 	*DeviceInfo = NULL;
 	// Retrieve name of the device object
-	Status = _GetObjectName(DeviceObject, &DeviceName);
-	if (NT_SUCCESS(Status)) {
+	status = _GetObjectName(DeviceObject, &uDeviceName);
+	if (NT_SUCCESS(status)) {
 		PDEVICE_OBJECT *UpperDevices = NULL;
 		SIZE_T UpperDeviceCount = 0;
 		PDEVICE_OBJECT DiskDevice = NULL;
 
 		// Retrieve Disk Device Object, present in filesystem devices that correspond
 		// to volumes.
-		Status = IoGetDiskDeviceObject(DeviceObject, &DiskDevice);
-		if (!NT_SUCCESS(Status))
+		status = IoGetDiskDeviceObject(DeviceObject, &DiskDevice);
+		if (!NT_SUCCESS(status))
 			DiskDevice = NULL;
 
 		// Retrieve addresses of Device Objects for lower devices in the
 		// device stack.
-		Status = _GetLowerUpperDevices(DeviceObject, TRUE, &UpperDevices, &UpperDeviceCount);
-		if (NT_SUCCESS(Status)) {
+		status = _GetLowerUpperDevices(DeviceObject, TRUE, &UpperDevices, &UpperDeviceCount);
+		if (NT_SUCCESS(status)) {
 			PDEVICE_OBJECT *LowerDevices = NULL;
 			SIZE_T LowerDeviceCount = 0;
 
 			// Retrieve addresses of Device Objects for upper devices in the
 			// device stack.
-			Status = _GetLowerUpperDevices(DeviceObject, FALSE, &LowerDevices, &LowerDeviceCount);
-			if (NT_SUCCESS(Status)) {
+			status = _GetLowerUpperDevices(DeviceObject, FALSE, &LowerDevices, &LowerDeviceCount);
+			if (NT_SUCCESS(status)) {
 				SIZE_T DeviceInfoSize = 0;
 				PWCHAR DisplayName = NULL;
 				PWCHAR Description = NULL;
@@ -501,13 +501,13 @@ static NTSTATUS _DeviceInfoSnapshotCreate(PDEVICE_OBJECT DeviceObject, PSNAPSHOT
 				PWCHAR ClassGuid = NULL;
 
 				// Start to compute size of the Device Info record
-				DeviceInfoSize = sizeof(SNAPSHOT_DEVICE_INFO) + DeviceName.Length + sizeof(WCHAR) + (LowerDeviceCount + UpperDeviceCount) * sizeof(PDEVICE_OBJECT);
+				DeviceInfoSize = sizeof(SNAPSHOT_DEVICE_INFO) + uDeviceName.Length + sizeof(WCHAR) + (LowerDeviceCount + UpperDeviceCount) * sizeof(PDEVICE_OBJECT);
 				DeviceInfoSize += 7 * sizeof(WCHAR);
 				if (DeviceObject->Flags & DO_BUS_ENUMERATED_DEVICE) {
 					// The device has been enumerated by PnP. Try to retrieve
 					// some information about it.
-					Status = _GetDevicePnPInformation(DeviceObject, &DisplayName, &Description, &Vendor, &Enumerator, &Class, &ClassGuid, &Location);
-					if (NT_SUCCESS(Status)) {
+					status = _GetDevicePnPInformation(DeviceObject, &DisplayName, &Description, &Vendor, &Enumerator, &Class, &ClassGuid, &Location);
+					if (NT_SUCCESS(status)) {
 						if (DisplayName != NULL)
 							DeviceInfoSize += wcslen(DisplayName) * sizeof(WCHAR);
                   
@@ -531,65 +531,70 @@ static NTSTATUS _DeviceInfoSnapshotCreate(PDEVICE_OBJECT DeviceObject, PSNAPSHOT
 					}
 				}
             
-				if (NT_SUCCESS(Status)) {
+				if (NT_SUCCESS(status)) {
 					// Allocate the Device Info record
-					TmpDeviceInfo = (PSNAPSHOT_DEVICE_INFO)HeapMemoryAllocPaged(DeviceInfoSize);
-					if (TmpDeviceInfo != NULL) {
+					tmpDeviceInfo = (PSNAPSHOT_DEVICE_INFO)HeapMemoryAllocPaged(DeviceInfoSize);
+					if (tmpDeviceInfo != NULL) {
 						PUCHAR Data = NULL;
+						PDEVOBJ_EXTENSION devObjExtension = NULL;
 
 						// Copy all information collected about the device into the
 						// record.
-						RtlZeroMemory(TmpDeviceInfo, DeviceInfoSize);
-						TmpDeviceInfo->Size = DeviceInfoSize;
-						TmpDeviceInfo->Characteristics = DeviceObject->Characteristics;
-						TmpDeviceInfo->DeviceType = DeviceObject->DeviceType;
-						TmpDeviceInfo->Flags = DeviceObject->Flags;
-						TmpDeviceInfo->ObjectAddress = DeviceObject;
-						TmpDeviceInfo->NumberOfLowerDevices = LowerDeviceCount;
-						TmpDeviceInfo->NumberOfUpperDevices = UpperDeviceCount;
-						TmpDeviceInfo->NameOffset = sizeof(SNAPSHOT_DEVICE_INFO);
-						Data = (PUCHAR)TmpDeviceInfo + TmpDeviceInfo->NameOffset;
-						RtlCopyMemory(Data, DeviceName.Buffer, DeviceName.Length);
-						((PWCHAR)Data)[DeviceName.Length / sizeof(WCHAR)] = L'\0';
-						Data += DeviceName.Length + sizeof(WCHAR);
-						TmpDeviceInfo->LowerDevicesOffset = (ULONG_PTR)Data - (ULONG_PTR)TmpDeviceInfo;
-						RtlCopyMemory(Data, LowerDevices, LowerDeviceCount * sizeof(PDEVICE_OBJECT));
+						RtlZeroMemory(tmpDeviceInfo, DeviceInfoSize);
+						tmpDeviceInfo->Size = DeviceInfoSize;
+						tmpDeviceInfo->Characteristics = DeviceObject->Characteristics;
+						tmpDeviceInfo->DeviceType = DeviceObject->DeviceType;
+						tmpDeviceInfo->Flags = DeviceObject->Flags;
+						tmpDeviceInfo->ObjectAddress = DeviceObject;
+						tmpDeviceInfo->NumberOfLowerDevices = LowerDeviceCount;
+						tmpDeviceInfo->NumberOfUpperDevices = UpperDeviceCount;
+						tmpDeviceInfo->NameOffset = sizeof(SNAPSHOT_DEVICE_INFO);
+						Data = (PUCHAR)tmpDeviceInfo + tmpDeviceInfo->NameOffset;
+						memcpy(Data, uDeviceName.Buffer, uDeviceName.Length);
+						((PWCHAR)Data)[uDeviceName.Length / sizeof(WCHAR)] = L'\0';
+						Data += uDeviceName.Length + sizeof(WCHAR);
+						tmpDeviceInfo->LowerDevicesOffset = (ULONG_PTR)Data - (ULONG_PTR)tmpDeviceInfo;
+						memcpy(Data, LowerDevices, LowerDeviceCount * sizeof(PDEVICE_OBJECT));
 						Data += LowerDeviceCount * sizeof(PDEVICE_OBJECT);
-						TmpDeviceInfo->UpperDevicesOffset = (ULONG_PTR)Data - (ULONG_PTR)TmpDeviceInfo;
+						tmpDeviceInfo->UpperDevicesOffset = (ULONG_PTR)Data - (ULONG_PTR)tmpDeviceInfo;
 						RtlCopyMemory(Data, UpperDevices, UpperDeviceCount * sizeof(PDEVICE_OBJECT));
 						Data += UpperDeviceCount * sizeof(PDEVICE_OBJECT);
-						_CopyString(Class, TmpDeviceInfo, &Data, &TmpDeviceInfo->ClassNameOffset);
-						_CopyString(DisplayName, TmpDeviceInfo, &Data, &TmpDeviceInfo->DisplayNameOffset);
-						_CopyString(Description, TmpDeviceInfo, &Data, &TmpDeviceInfo->DescriptionOffset);
-						_CopyString(Vendor, TmpDeviceInfo, &Data, &TmpDeviceInfo->VendorNameOffset);
-						_CopyString(Enumerator, TmpDeviceInfo, &Data, &TmpDeviceInfo->EnumeratorOffset);
-						_CopyString(Location, TmpDeviceInfo, &Data, &TmpDeviceInfo->LocationOffset);
-						_CopyString(ClassGuid, TmpDeviceInfo, &Data, &TmpDeviceInfo->ClassGuidOffset);
-						TmpDeviceInfo->DiskDevice = DiskDevice;
-						TmpDeviceInfo->Vpb = DeviceObject->Vpb;
-						Status = _SecurityInfoCreate(DeviceObject, &TmpDeviceInfo->Security);
-						if (NT_SUCCESS(Status)) {
-							Status = _GetDeviceVpbInfo(DeviceObject, &TmpDeviceInfo->VpbInfo);
-							if (NT_SUCCESS(Status)) {
+						_CopyString(Class, tmpDeviceInfo, &Data, &tmpDeviceInfo->ClassNameOffset);
+						_CopyString(DisplayName, tmpDeviceInfo, &Data, &tmpDeviceInfo->DisplayNameOffset);
+						_CopyString(Description, tmpDeviceInfo, &Data, &tmpDeviceInfo->DescriptionOffset);
+						_CopyString(Vendor, tmpDeviceInfo, &Data, &tmpDeviceInfo->VendorNameOffset);
+						_CopyString(Enumerator, tmpDeviceInfo, &Data, &tmpDeviceInfo->EnumeratorOffset);
+						_CopyString(Location, tmpDeviceInfo, &Data, &tmpDeviceInfo->LocationOffset);
+						_CopyString(ClassGuid, tmpDeviceInfo, &Data, &tmpDeviceInfo->ClassGuidOffset);
+						tmpDeviceInfo->DiskDevice = DiskDevice;
+						tmpDeviceInfo->Vpb = DeviceObject->Vpb;
+						devObjExtension = DeviceObject->DeviceObjectExtension;
+						tmpDeviceInfo->DeviceNode = devObjExtension->DeviceNode;
+						tmpDeviceInfo->ExtensionFlags = devObjExtension->ExtensionFlags;
+						tmpDeviceInfo->PowerFlags = devObjExtension->PowerFlags;
+						status = _SecurityInfoCreate(DeviceObject, &tmpDeviceInfo->Security);
+						if (NT_SUCCESS(status)) {
+							status = _GetDeviceVpbInfo(DeviceObject, &tmpDeviceInfo->VpbInfo);
+							if (NT_SUCCESS(status)) {
 								if ((DeviceObject->Flags & DO_BUS_ENUMERATED_DEVICE) != 0)
-									Status = _GetDeviceAdvancedPnPInfo(DeviceObject, &TmpDeviceInfo->AdvancedPnPInfo);
+									status = _GetDeviceAdvancedPnPInfo(SnapshotFlags, DeviceObject, &tmpDeviceInfo->AdvancedPnPInfo);
 
-								if (!NT_SUCCESS(Status) && TmpDeviceInfo->VpbInfo != NULL)
-									HeapMemoryFree(TmpDeviceInfo->VpbInfo);
+								if (!NT_SUCCESS(status) && tmpDeviceInfo->VpbInfo != NULL)
+									HeapMemoryFree(tmpDeviceInfo->VpbInfo);
 							}
 
-							if (NT_SUCCESS(Status))
+							if (NT_SUCCESS(status))
 								// Return the Device Info record and signal success of
 								// the operation.
-								*DeviceInfo = TmpDeviceInfo;
+								*DeviceInfo = tmpDeviceInfo;
 					
-							if (!NT_SUCCESS(Status))
-								_SecurityInfoFree(TmpDeviceInfo->Security);
+							if (!NT_SUCCESS(status))
+								_SecurityInfoFree(tmpDeviceInfo->Security);
 						}
 
-						if (!NT_SUCCESS(Status))
-							HeapMemoryFree(TmpDeviceInfo);
-					} else Status = STATUS_INSUFFICIENT_RESOURCES;
+						if (!NT_SUCCESS(status))
+							HeapMemoryFree(tmpDeviceInfo);
+					} else status = STATUS_INSUFFICIENT_RESOURCES;
             
 					if (Enumerator != NULL)
 						HeapMemoryFree(Enumerator);
@@ -619,11 +624,11 @@ static NTSTATUS _DeviceInfoSnapshotCreate(PDEVICE_OBJECT DeviceObject, PSNAPSHOT
 			_ReleaseDeviceArray(UpperDevices, UpperDeviceCount);
 		}
 
-		HeapMemoryFree(DeviceName.Buffer);
+		HeapMemoryFree(uDeviceName.Buffer);
 	}
 
-	DEBUG_EXIT_FUNCTION("0x%x, *DeviceInfo=0x%p", Status, *DeviceInfo);
-	return Status;
+	DEBUG_EXIT_FUNCTION("0x%x, *DeviceInfo=0x%p", status, *DeviceInfo);
+	return status;
 }
 
 
@@ -632,21 +637,21 @@ static NTSTATUS _DeviceInfoSnapshotCreate(PDEVICE_OBJECT DeviceObject, PSNAPSHOT
  *
  *  @param Address of Device Info record to free.
  */
-static VOID _DeviceInfoSnapshotFree(PSNAPSHOT_DEVICE_INFO DeviceInfo)
+static VOID _DeviceInfoSnapshotFree(_Inout_ PSNAPSHOT_DEVICE_INFO DeviceInfo)
 {
-   DEBUG_ENTER_FUNCTION("DeviceInfo=0x%p", DeviceInfo);
+	DEBUG_ENTER_FUNCTION("DeviceInfo=0x%p", DeviceInfo);
 
-   if (DeviceInfo->AdvancedPnPInfo != NULL)
-	   _FreeAdvancedPnPInfo(DeviceInfo->AdvancedPnPInfo);
+	if (DeviceInfo->AdvancedPnPInfo != NULL)
+		_FreeAdvancedPnPInfo(DeviceInfo->AdvancedPnPInfo);
 
-   if (DeviceInfo->VpbInfo != NULL)
-      _FreeDeviceVpbInfo(DeviceInfo->VpbInfo);
+	if (DeviceInfo->VpbInfo != NULL)
+		_FreeDeviceVpbInfo(DeviceInfo->VpbInfo);
 
-   _SecurityInfoFree(DeviceInfo->Security);
-   HeapMemoryFree(DeviceInfo);
+	_SecurityInfoFree(DeviceInfo->Security);
+	HeapMemoryFree(DeviceInfo);
 
-   DEBUG_EXIT_FUNCTION_VOID();
-   return;
+	DEBUG_EXIT_FUNCTION_VOID();
+	return;
 }
 
 
@@ -670,93 +675,92 @@ static VOID _DeviceInfoSnapshotFree(PSNAPSHOT_DEVICE_INFO DeviceInfo)
  *  creates and fills Device Info structures of them. Addresses of the structures
  *  are stored inside the Driver Info structure.
  */
-static NTSTATUS _DriverSnapshotCreate(PDRIVER_OBJECT DriverObject, PSNAPSHOT_DRIVER_INFO *DriverInfo)
+static NTSTATUS _DriverSnapshotCreate(_In_ ULONG SnapshotFlags, _In_ PDRIVER_OBJECT DriverObject, _Out_ PSNAPSHOT_DRIVER_INFO *DriverInfo)
 {
-	UNICODE_STRING DriverName;
-	PSNAPSHOT_DRIVER_INFO TmpDriverInfo = NULL;
-	NTSTATUS Status = STATUS_UNSUCCESSFUL;
-	PDEVICE_OBJECT *DeviceArray = NULL;
-	ULONG DeviceArrayLength = 0;
-	DEBUG_ENTER_FUNCTION("DriverObject=0x%p; DriverInfo=0x%p", DriverObject, DriverInfo);
+	UNICODE_STRING uDrivername;
+	PSNAPSHOT_DRIVER_INFO tmpDriverInfo = NULL;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	PDEVICE_OBJECT *deviceArray = NULL;
+	ULONG deviceArrayLength = 0;
+	DEBUG_ENTER_FUNCTION("SnapshotFlags=0x%x; DriverObject=0x%p; DriverInfo=0x%p", SnapshotFlags, DriverObject, DriverInfo);
    
 	*DriverInfo = NULL;
 	// Get name of the driver
-	Status = _GetObjectName(DriverObject, &DriverName);
-	if (NT_SUCCESS(Status)) {
+	status = _GetObjectName(DriverObject, &uDrivername);
+	if (NT_SUCCESS(status)) {
 		// Enum its devices
-		Status = _EnumDriverDevices(DriverObject, &DeviceArray, &DeviceArrayLength);
-		if (NT_SUCCESS(Status)) {
-			LONG i = 0;
+		status = _EnumDriverDevices(DriverObject, &deviceArray, &deviceArrayLength);
+		if (NT_SUCCESS(status)) {
 			SIZE_T DriverInfoSize = 0;
 
 			// Compute size of the new Driver Info record and allocate it.
-			DriverInfoSize = sizeof(SNAPSHOT_DRIVER_INFO) + DriverName.Length + sizeof(WCHAR) + DeviceArrayLength * sizeof(PDEVICE_OBJECT);
-			TmpDriverInfo = (PSNAPSHOT_DRIVER_INFO)HeapMemoryAllocPaged(DriverInfoSize);
-			if (TmpDriverInfo != NULL) {
-				LONG i = 0;
+			DriverInfoSize = sizeof(SNAPSHOT_DRIVER_INFO) + uDrivername.Length + sizeof(WCHAR) + deviceArrayLength * sizeof(PDEVICE_OBJECT);
+			tmpDriverInfo = (PSNAPSHOT_DRIVER_INFO)HeapMemoryAllocPaged(DriverInfoSize);
+			if (tmpDriverInfo != NULL) {
+				SIZE_T i = 0;
 				PDEVICE_OBJECT *pDeviceObject = NULL;
-				PUCHAR Data = (PUCHAR)((PUCHAR)TmpDriverInfo + sizeof(SNAPSHOT_DRIVER_INFO));
+				PUCHAR Data = (PUCHAR)((PUCHAR)tmpDriverInfo + sizeof(SNAPSHOT_DRIVER_INFO));
             
 				// Initialize members of the Driver Info structure.
 				// Do not copy FAST_IO_DISPATCH structure of the driver because
 				// it may disappear during the operaion which whould made 
 				// VrtuleTree unsafe.
-				RtlZeroMemory(TmpDriverInfo, DriverInfoSize);
-				TmpDriverInfo->Size = DriverInfoSize;
-				TmpDriverInfo->ImageBase = DriverObject->DriverStart;
-				TmpDriverInfo->ImageSize = DriverObject->DriverSize;
-				TmpDriverInfo->DriverEntry = DriverObject->DriverInit;
-				TmpDriverInfo->DriverUnload = DriverObject->DriverUnload;
-				TmpDriverInfo->Flags = DriverObject->Flags;
-				TmpDriverInfo->StartIo = DriverObject->DriverStartIo;
-				TmpDriverInfo->ObjectAddress = DriverObject;
+				memset(tmpDriverInfo, 0, DriverInfoSize);
+				tmpDriverInfo->Size = DriverInfoSize;
+				tmpDriverInfo->ImageBase = DriverObject->DriverStart;
+				tmpDriverInfo->ImageSize = DriverObject->DriverSize;
+				tmpDriverInfo->DriverEntry = DriverObject->DriverInit;
+				tmpDriverInfo->DriverUnload = DriverObject->DriverUnload;
+				tmpDriverInfo->Flags = DriverObject->Flags;
+				tmpDriverInfo->StartIo = DriverObject->DriverStartIo;
+				tmpDriverInfo->ObjectAddress = DriverObject;
 				for (i = 0; i < IRP_MJ_MAXIMUM_FUNCTION + 1; ++i)
-					TmpDriverInfo->MajorFunctions[i] = DriverObject->MajorFunction[i];
+					tmpDriverInfo->MajorFunctions[i] = DriverObject->MajorFunction[i];
 
-				TmpDriverInfo->NumberOfDevices = DeviceArrayLength;
-				TmpDriverInfo->DevicesOffset = (ULONG_PTR)Data - (ULONG_PTR)TmpDriverInfo;
+				tmpDriverInfo->NumberOfDevices = deviceArrayLength;
+				tmpDriverInfo->DevicesOffset = (ULONG_PTR)Data - (ULONG_PTR)tmpDriverInfo;
 				// Copy addresses of Device Object structures of the driver's
 				// devices into the record. These addresses will be copied to
 				// Device Info structures later created for individual devices of
 				// the driver. The addresses in the record will be replaced with
 				// addresses of the corresponding Device Info structures.
-				RtlCopyMemory(Data, DeviceArray, DeviceArrayLength * sizeof(PDEVICE_OBJECT));
-				Data += DeviceArrayLength * sizeof(PDEVICE_OBJECT);
+				memcpy(Data, deviceArray, deviceArrayLength * sizeof(PDEVICE_OBJECT));
+				Data += deviceArrayLength * sizeof(PDEVICE_OBJECT);
 				// Copy name of the driver
-				TmpDriverInfo->NameOffset = (ULONG_PTR)Data - (ULONG_PTR)TmpDriverInfo;
-				RtlCopyMemory(Data, DriverName.Buffer, DriverName.Length);
-				((PWCHAR)Data)[DriverName.Length / sizeof(WCHAR)] = '\0';
+				tmpDriverInfo->NameOffset = (ULONG_PTR)Data - (ULONG_PTR)tmpDriverInfo;
+				memcpy(Data, uDrivername.Buffer, uDrivername.Length);
+				((PWCHAR)Data)[uDrivername.Length / sizeof(WCHAR)] = '\0';
 					// Walk the Device Objects and replace them with DeviceInfo
 					// records.
-					pDeviceObject = (PDEVICE_OBJECT *)((PUCHAR)TmpDriverInfo + TmpDriverInfo->DevicesOffset);
-					for (i = 0; i < TmpDriverInfo->NumberOfDevices; ++i) {
-						Status = _DeviceInfoSnapshotCreate(pDeviceObject[i], (PSNAPSHOT_DEVICE_INFO *)&pDeviceObject[i]);
-						if (!NT_SUCCESS(Status)) {
-							LONG j = 0;
+					pDeviceObject = (PDEVICE_OBJECT *)((PUCHAR)tmpDriverInfo + tmpDriverInfo->DevicesOffset);
+					for (i = 0; i < tmpDriverInfo->NumberOfDevices; ++i) {
+						status = _DeviceInfoSnapshotCreate(SnapshotFlags, pDeviceObject[i], (PSNAPSHOT_DEVICE_INFO *)&pDeviceObject[i]);
+						if (!NT_SUCCESS(status)) {
+							SIZE_T j = 0;
 
-							for (j = i - 1; j >= 0; --j)
+							for (j = 0; j < i; ++j)
 								_DeviceInfoSnapshotFree((PSNAPSHOT_DEVICE_INFO)pDeviceObject[j]);
                
 							break;
 						}
 					}
             
-					if (NT_SUCCESS(Status))
-						*DriverInfo = TmpDriverInfo;
+					if (NT_SUCCESS(status))
+						*DriverInfo = tmpDriverInfo;
 
-				if (!NT_SUCCESS(Status))
-					HeapMemoryFree(TmpDriverInfo);
+				if (!NT_SUCCESS(status))
+					HeapMemoryFree(tmpDriverInfo);
 
-			} else Status = STATUS_INSUFFICIENT_RESOURCES;
+			} else status = STATUS_INSUFFICIENT_RESOURCES;
 
-			_ReleaseDeviceArray(DeviceArray, DeviceArrayLength);
+			_ReleaseDeviceArray(deviceArray, deviceArrayLength);
 		}
 
-		HeapMemoryFree(DriverName.Buffer);
+		HeapMemoryFree(uDrivername.Buffer);
 	}
 
-	DEBUG_EXIT_FUNCTION("0x%x, *DriverInfo=0x%p", Status, *DriverInfo);
-	return Status;
+	DEBUG_EXIT_FUNCTION("0x%x, *DriverInfo=0x%p", status, *DriverInfo);
+	return status;
 }
 
 
@@ -766,9 +770,9 @@ static NTSTATUS _DriverSnapshotCreate(PDRIVER_OBJECT DriverObject, PSNAPSHOT_DRI
  *
  *  @param DriverInfo Address of Driver Info structure to free.
  */
-static VOID _DriverSnapshotFree(PSNAPSHOT_DRIVER_INFO DriverInfo)
+static VOID _DriverSnapshotFree(_Inout_ PSNAPSHOT_DRIVER_INFO DriverInfo)
 {
-	LONG i = 0;
+	ULONG_PTR i = 0;
 	PSNAPSHOT_DEVICE_INFO *DeviceInfo = NULL;
 	DEBUG_ENTER_FUNCTION("DriverInfo=0x%p", DriverInfo);
 
@@ -782,11 +786,12 @@ static VOID _DriverSnapshotFree(PSNAPSHOT_DRIVER_INFO DriverInfo)
 	return;
 }
 
-static ULONG _ComputeSnapshotSize(PVRTULETREE_KERNEL_SNAPSHOT Snapshot)
+
+static SIZE_T _ComputeSnapshotSize(_In_ PVRTULETREE_KERNEL_SNAPSHOT Snapshot)
 {
 	ULONG i = 0;
 	ULONG j = 0;
-	ULONG snapshotSize = 0;
+	SIZE_T snapshotSize = 0;
 	PSNAPSHOT_DRIVERLIST driverList = NULL;
 	DEBUG_ENTER_FUNCTION("Snapshot=0x%p", Snapshot);
 
@@ -822,7 +827,8 @@ static ULONG _ComputeSnapshotSize(PVRTULETREE_KERNEL_SNAPSHOT Snapshot)
 	return snapshotSize;
 }
 
-static VOID FORCEINLINE _CopyFlatPart(PUCHAR *AktPos, PVOID KernelBuffer, ULONG Size)
+
+static VOID FORCEINLINE _CopyFlatPart(_Inout_ PUCHAR *AktPos, _In_ PVOID KernelBuffer, _In_ SIZE_T Size)
 {
 	memcpy(*AktPos, KernelBuffer, Size);
 	(*AktPos) += Size;
@@ -830,12 +836,12 @@ static VOID FORCEINLINE _CopyFlatPart(PUCHAR *AktPos, PVOID KernelBuffer, ULONG 
 	return;
 }
 
-static ULONG _CopySnapshot(PVRTULETREE_KERNEL_SNAPSHOT Snapshot, PVOID UserBuffer)
+
+static ULONG _CopySnapshot(_In_ PVRTULETREE_KERNEL_SNAPSHOT Snapshot, _Out_ PVOID UserBuffer)
 {
 	ULONG i = 0;
 	ULONG j = 0;
 	PUCHAR aktPos = (PUCHAR)UserBuffer;
-	ULONG dataSize = 0;
 	PSNAPSHOT_DRIVER_INFO *userDriverInfoPtr = NULL;
 	PSNAPSHOT_DEVICE_INFO *userDeviceInfoPtr = NULL;
 	PSNAPSHOT_DRIVERLIST driverList = NULL;
@@ -899,6 +905,7 @@ static ULONG _CopySnapshot(PVRTULETREE_KERNEL_SNAPSHOT Snapshot, PVOID UserBuffe
 	return status;
 }
 
+
 /************************************************************************/
 /*                            PUBLIC ROUTINES                           */
 /************************************************************************/
@@ -906,6 +913,13 @@ static ULONG _CopySnapshot(PVRTULETREE_KERNEL_SNAPSHOT Snapshot, PVOID UserBuffe
 /** Collects information about all drivers and devices present in the
  *  system and stores it inside a new snapshot.
  *
+ *  @param SnapshotFlags Determines whether some special information should also be
+ *  collected (collecting of them might be dangerous for the system stability).
+ *  The following flags are valid:
+ *    @value VTREE_SNAPSHOT_DEVICE_ID Collect device ID (via the IRP_MN_QUERY_ID request).
+ *	  @value VTREE_SNAPSHOT_FAST_IO_DISPATCH Collect fast I/O dispatch structure of driver objects,
+ *     if available.
+ *   @value VTREE_SNAPSHOT_DEVNODE_TREE Collect some information from devnodes (parent, and children).
  *  @param Snapshot Address of variable that, in case of success, receives
  *  address of the new snapshot.
  *
@@ -915,84 +929,84 @@ static ULONG _CopySnapshot(PVRTULETREE_KERNEL_SNAPSHOT Snapshot, PVOID UserBuffe
  *  @remark The routine inserts the snapshot to the list of snapshot. The
  *  routine is thread-safe.
  */
-NTSTATUS SnapshotCreate(PVRTULETREE_KERNEL_SNAPSHOT *Snapshot)
+NTSTATUS SnapshotCreate(_In_ ULONG SnapshotFlags, _Out_ PVRTULETREE_KERNEL_SNAPSHOT *Snapshot)
 {
-   PSNAPSHOT_DRIVERLIST DriverList = NULL;
-   UNICODE_STRING DriverDirectory;
-   PDRIVER_OBJECT *NormalDrivers = NULL;
-   SIZE_T NormalDriverCount = 0;
-   PDRIVER_OBJECT *FileSystemDrivers = NULL;
-   SIZE_T FileSystemDriverCount = 0;
-   NTSTATUS Status = STATUS_UNSUCCESSFUL;
-   DEBUG_ENTER_FUNCTION("Snapshot=0x%p", Snapshot);
+	PSNAPSHOT_DRIVERLIST driverList = NULL;
+	UNICODE_STRING uDriverDirectory;
+	PDRIVER_OBJECT *normalDrivers = NULL;
+	SIZE_T normalDriverCount = 0;
+	PDRIVER_OBJECT *fileSystemDrivers = NULL;
+	SIZE_T fileSystemDriverCount = 0;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	DEBUG_ENTER_FUNCTION("SnapshotFlags=0x%x; Snapshot=0x%p", SnapshotFlags, Snapshot);
 
-   // Collect Driver Objects from \Driver directory
-   RtlInitUnicodeString(&DriverDirectory, L"\\Driver");
-   Status = _GetDriversInDirectory(&DriverDirectory, &NormalDrivers, &NormalDriverCount);
-   if (NT_SUCCESS(Status)) {
-      // Collect Driver Objects from \FileSystem directory
-      RtlInitUnicodeString(&DriverDirectory, L"\\FileSystem");
-      Status = _GetDriversInDirectory(&DriverDirectory, &FileSystemDrivers, &FileSystemDriverCount);
-      if (NT_SUCCESS(Status)) {
-         PDRIVER_OBJECT *DriverArrays [2] = {NormalDrivers, FileSystemDrivers};
-         SIZE_T ArrayLengths [2] = {NormalDriverCount, FileSystemDriverCount};
+	// Collect Driver Objects from \Driver directory
+	RtlInitUnicodeString(&uDriverDirectory, L"\\Driver");
+	status = _GetDriversInDirectory(&uDriverDirectory, &normalDrivers, &normalDriverCount);
+	if (NT_SUCCESS(status)) {
+		// Collect Driver Objects from \FileSystem directory
+		RtlInitUnicodeString(&uDriverDirectory, L"\\FileSystem");
+		status = _GetDriversInDirectory(&uDriverDirectory, &fileSystemDrivers, &fileSystemDriverCount);
+		if (NT_SUCCESS(status)) {
+			PDRIVER_OBJECT *DriverArrays [2] = {normalDrivers, fileSystemDrivers};
+			SIZE_T ArrayLengths [2] = {normalDriverCount, fileSystemDriverCount};
 
-         // Create a node representing the list of drivers in the snapshot.
-         // The node will contain all drivers found in \Driver and \FileSystem
-         // directories. Creation of the node does not cause creation of
-         // Driver Info and Device Info records.
-         Status = _DriverListNodeCreate(DriverArrays, ArrayLengths, sizeof(ArrayLengths) / sizeof(SIZE_T), &DriverList);
-         if (NT_SUCCESS(Status)) {
-            LONG i = 0;
-            PDRIVER_OBJECT *DriverObject = NULL;
+			// Create a node representing the list of drivers in the snapshot.
+			// The node will contain all drivers found in \Driver and \FileSystem
+			// directories. Creation of the node does not cause creation of
+			// Driver Info and Device Info records.
+			status = _DriverListNodeCreate(DriverArrays, ArrayLengths, sizeof(ArrayLengths) / sizeof(SIZE_T), &driverList);
+			if (NT_SUCCESS(status)) {
+				SIZE_T i = 0;
+				PDRIVER_OBJECT *DriverObject = NULL;
 
-            // Create Driver Info records for all drivers in the snapshot.
-            // This will also cause the Device Info records to be created.
-            DriverObject = (PDRIVER_OBJECT *)((PUCHAR)DriverList + DriverList->DriversOffset);
-            for (i = 0; i < DriverList->NumberOfDrivers; ++i) {
-               Status = _DriverSnapshotCreate(DriverObject[i], (PSNAPSHOT_DRIVER_INFO *)&DriverObject[i]);
-               if (!NT_SUCCESS(Status)) {
-                  LONG j = 0;
+				// Create Driver Info records for all drivers in the snapshot.
+				// This will also cause the Device Info records to be created.
+				DriverObject = (PDRIVER_OBJECT *)((PUCHAR)driverList + driverList->DriversOffset);
+				for (i = 0; i < driverList->NumberOfDrivers; ++i) {
+					status = _DriverSnapshotCreate(SnapshotFlags, DriverObject[i], (PSNAPSHOT_DRIVER_INFO *)&DriverObject[i]);
+					if (!NT_SUCCESS(status)) {
+						SIZE_T j = 0;
 
-                  for (j = i - 1; j >= 0; --j)
-                     _DriverSnapshotFree((PSNAPSHOT_DRIVER_INFO)DriverObject[j]);
+						for (j = 0; j < i; ++j)
+							_DriverSnapshotFree((PSNAPSHOT_DRIVER_INFO)DriverObject[j]);
                
-                  break;
-               }
-            }
+						break;
+					}
+				}
 
-            if (NT_SUCCESS(Status)) {
-               PVRTULETREE_KERNEL_SNAPSHOT TmpSnapshot = NULL;
+				if (NT_SUCCESS(status)) {
+					PVRTULETREE_KERNEL_SNAPSHOT TmpSnapshot = NULL;
                
-               // Allocate snapshot record, initialize it and insert it
-               // into the list of snapshots
-               TmpSnapshot = (PVRTULETREE_KERNEL_SNAPSHOT)HeapMemoryAllocPaged(DriverList->Size + sizeof(VRTULETREE_KERNEL_SNAPSHOT) - sizeof(SNAPSHOT_DRIVERLIST));
-               if (TmpSnapshot != NULL) {
-                  RtlCopyMemory(&TmpSnapshot->DriverList, DriverList, DriverList->Size);                  
-                  *Snapshot = TmpSnapshot;
-                  Status = STATUS_SUCCESS;
-               } else Status = STATUS_INSUFFICIENT_RESOURCES;
+					// Allocate snapshot record, initialize it and insert it
+					// into the list of snapshots
+					TmpSnapshot = (PVRTULETREE_KERNEL_SNAPSHOT)HeapMemoryAllocPaged(driverList->Size + sizeof(VRTULETREE_KERNEL_SNAPSHOT) - sizeof(SNAPSHOT_DRIVERLIST));
+					if (TmpSnapshot != NULL) {
+						RtlCopyMemory(&TmpSnapshot->DriverList, driverList, driverList->Size);                  
+						*Snapshot = TmpSnapshot;
+						status = STATUS_SUCCESS;
+					} else status = STATUS_INSUFFICIENT_RESOURCES;
 
-               if (!NT_SUCCESS(Status)) {
-                  PSNAPSHOT_DRIVER_INFO *DriverInfo = NULL;
+					if (!NT_SUCCESS(status)) {
+						PSNAPSHOT_DRIVER_INFO *DriverInfo = NULL;
 
-                  DriverInfo = (PSNAPSHOT_DRIVER_INFO *)((PUCHAR)DriverList + DriverList->DriversOffset);
-                  for (i = 0; i < DriverList->NumberOfDrivers; ++i)
-                     _DriverSnapshotFree(DriverInfo[i]);
-               }
-            }
+						DriverInfo = (PSNAPSHOT_DRIVER_INFO *)((PUCHAR)driverList + driverList->DriversOffset);
+						for (i = 0; i < driverList->NumberOfDrivers; ++i)
+							_DriverSnapshotFree(DriverInfo[i]);
+					}
+				}
 
-            HeapMemoryFree(DriverList);
-         }
+				HeapMemoryFree(driverList);
+			}
 
-         _ReleaseDriverArray(FileSystemDrivers, FileSystemDriverCount);
-      }
+			_ReleaseDriverArray(fileSystemDrivers, fileSystemDriverCount);
+		}
 
-      _ReleaseDriverArray(NormalDrivers, NormalDriverCount);
-   }
+		_ReleaseDriverArray(normalDrivers, normalDriverCount);
+	}
 
-   DEBUG_EXIT_FUNCTION("0x%x, *Snapshot=0x%p", Status, *Snapshot);
-   return Status;
+	DEBUG_EXIT_FUNCTION("0x%x, *Snapshot=0x%p", status, *Snapshot);
+	return status;
 }
 
 
@@ -1000,29 +1014,30 @@ NTSTATUS SnapshotCreate(PVRTULETREE_KERNEL_SNAPSHOT *Snapshot)
  *
  *  @param Snapshot The snapshot.
  */
-VOID SnapshotFree(PVRTULETREE_KERNEL_SNAPSHOT Snapshot)
+VOID SnapshotFree(_Inout_ PVRTULETREE_KERNEL_SNAPSHOT Snapshot)
 {
-   LONG i = 0;
-   PSNAPSHOT_DRIVER_INFO *DriverInfo;
-   PSNAPSHOT_DRIVERLIST DriverList = NULL;
-   DEBUG_ENTER_FUNCTION("Snapshot=0x%p", Snapshot);
+	SIZE_T i = 0;
+	PSNAPSHOT_DRIVER_INFO *DriverInfo;
+	PSNAPSHOT_DRIVERLIST DriverList = NULL;
+	DEBUG_ENTER_FUNCTION("Snapshot=0x%p", Snapshot);
 
-   DriverList = &Snapshot->DriverList;
-   DriverInfo = (PSNAPSHOT_DRIVER_INFO *)((PUCHAR)DriverList + DriverList->DriversOffset);
-   for (i = 0; i < DriverList->NumberOfDrivers; ++i)
-      // Freeing Driver Info record also frees all related Device Info records
-      _DriverSnapshotFree(DriverInfo[i]);
+	DriverList = &Snapshot->DriverList;
+	DriverInfo = (PSNAPSHOT_DRIVER_INFO *)((PUCHAR)DriverList + DriverList->DriversOffset);
+	for (i = 0; i < DriverList->NumberOfDrivers; ++i)
+		// Freeing Driver Info record also frees all related Device Info records
+		_DriverSnapshotFree(DriverInfo[i]);
 
-   HeapMemoryFree(Snapshot);
+	HeapMemoryFree(Snapshot);
 
-   DEBUG_EXIT_FUNCTION_VOID();
-   return;
+	DEBUG_EXIT_FUNCTION_VOID();
+	return;
 }
 
-NTSTATUS SnapshotToUser(PVRTULETREE_KERNEL_SNAPSHOT Snapshot, PVOID *Address)
+
+NTSTATUS SnapshotToUser(_In_ PVRTULETREE_KERNEL_SNAPSHOT Snapshot, _Out_ PVOID *Address)
 {
 	PVOID tmpAddress = NULL;
-	ULONG snapshotSize = 0;
+	SIZE_T snapshotSize = 0;
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
 	DEBUG_ENTER_FUNCTION("Snapshot=0x%p; Address=0x%p", Snapshot, Address);
 

@@ -28,6 +28,18 @@ Type
     IncludeLocation : Boolean;
     IncludeClass : Boolean;
     IncludeClassGuid : Boolean;
+
+    IncludeExtensionFlags : Boolean;
+    IncludeExtensionFlagsStr : Boolean;
+    IncludeRemovalRelations : Boolean;
+    IncludeEjectRelations : Boolean;
+    IncludeDeviceId : Boolean;
+    IncludeInstanceId : Boolean;
+    IncludeHardwareIDs : Boolean;
+    IncludeCompatibleIDs : Boolean;
+    IncludeDeviceCapabilities : Boolean;
+
+    IncludeSecurity : Boolean;
     end;
   PDeviceLogSettings = ^TDeviceLogSettings;
 

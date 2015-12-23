@@ -9,7 +9,18 @@ Interface
 Uses
   Windows;
 
+Const
+  VTREE_SNAPSHOT_DEVICE_ID        = $1;
+  VTREE_SNAPSHOT_FAST_IO_DISPATCH = $2;
+  VTREE_SNAPSHOT_DEVNODE_TREE     = $4;
+
 Type
+  _VRTULETREE_KERNEL_SNAPSHOT_INPUT = Record
+    SnapshotFlags : Cardinal;
+    end;
+  VRTULETREE_KERNEL_SNAPSHOT_INPUT = _VRTULETREE_KERNEL_SNAPSHOT_INPUT;
+  PVRTULETREE_KERNEL_SNAPSHOT_INPUT = ^VRTULETREE_KERNEL_SNAPSHOT_INPUT;
+
   DEVICE_POWER_STATE = (
     PowerDeviceUnspecified  = 0,
     PowerDeviceD0           = 1,
@@ -121,6 +132,13 @@ Type
     CompatibleIds : Array Of WideString;
     RemovalRelations : Array Of Pointer;
     EjectRelations : Array Of Pointer;
+    DeviceNode : Pointer;
+    Child : Pointer;
+    Parent : Pointer;
+    Sibling : Pointer;
+    ExtensionFlags : Cardinal;
+    PowerFlags : Cardinal;
+    Capabilities : TDeviceCapabilities;
     end;
   PDeviceSnapshot = ^TDeviceSnapshot;
 
@@ -222,6 +240,12 @@ Type
     VpbSnapshot : Pointer;
     AdvancedPnPInfo : PSNAPSHOT_DEVICE_ADVANCED_PNP_INFO;
     Security : PSECURITY_DESCRIPTOR;
+    DeviceNode : Pointer;
+    Parent : Pointer;
+    Child : Pointer;
+    Sibling : Pointer;
+    ExtensionFlags : Cardinal;
+    PowerFlags : Cardinal;
     end;
   PSNAPSHOT_DEVICEINFO = ^SNAPSHOT_DEVICEINFO;
 
@@ -230,7 +254,7 @@ Procedure DriverUninstall;
 Function DriverLoad:Boolean;
 Procedure DriverUnload;
 
-Function DriverCreateSnapshot(Var ASnapshot:Pointer):Boolean;
+Function DriverCreateSnapshot(AFlags:Cardinal; Var ASnapshot:Pointer):Boolean;
 Function DriverFreeSnapshot(ASnapshot:Pointer):Boolean;
 
 Implementation
@@ -287,9 +311,12 @@ begin
 Result := DeviceIoControl(hDevice, ACode, AInBuffer, AInBufferLength, AOutBUffer, AOutBufferLength, Dummy, Nil);
 end;
 
-Function DriverCreateSnapshot(Var ASnapshot:Pointer):Boolean;
+Function DriverCreateSnapshot(AFlags:Cardinal; Var ASnapshot:Pointer):Boolean;
+Var
+  inData : VRTULETREE_KERNEL_SNAPSHOT_INPUT;
 begin
-Result := DriverIOCTL(IOCTL_VRTULETREE_CREATE_SNAPSHOT, Nil, 0, @ASnapshot, SizeOf(ASnapshot));
+inData.SnapshotFlags := AFlags;
+Result := DriverIOCTL(IOCTL_VRTULETREE_CREATE_SNAPSHOT, @inData, SizeOf(inData), @ASnapshot, SizeOf(ASnapshot));
 end;
 
 Function DriverFreeSnapshot(ASnapshot:Pointer):Boolean;
