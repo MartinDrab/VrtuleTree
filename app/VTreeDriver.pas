@@ -7,7 +7,7 @@ Interface
 
 
 Uses
-  Windows;
+  Windows, Kernel;
 
 Const
   VTREE_SNAPSHOT_DEVICE_ID        = $1;
@@ -21,142 +21,9 @@ Type
   VRTULETREE_KERNEL_SNAPSHOT_INPUT = _VRTULETREE_KERNEL_SNAPSHOT_INPUT;
   PVRTULETREE_KERNEL_SNAPSHOT_INPUT = ^VRTULETREE_KERNEL_SNAPSHOT_INPUT;
 
-  DEVICE_POWER_STATE = (
-    PowerDeviceUnspecified  = 0,
-    PowerDeviceD0           = 1,
-    PowerDeviceD1           = 2,
-    PowerDeviceD2           = 3,
-    PowerDeviceD3           = 4,
-    PowerDeviceMaximum      = 5
-  );
-
-  SYSTEM_POWER_STATE = (
-    PowerSystemUnspecified  = 0,
-    PowerSystemWorking      = 1,
-    PowerSystemSleeping1    = 2,
-    PowerSystemSleeping2    = 3,
-    PowerSystemSleeping3    = 4,
-    PowerSystemHibernate    = 5,
-    PowerSystemShutdown     = 6,
-    PowerSystemMaximum      = 7
-  );
-
-Const
-  POWER_SYSTEM_MAXIMUM = 7;
-
-Type
-  DEVICE_CAPABILITIES = Record
-    SIze : Word;
-    Version : Word;
-    Flags : Cardinal;
-    Address : Cardinal;
-    UINumber : Cardinal;
-    DeviceState : Array [0..POWER_SYSTEM_MAXIMUM - 1] Of DEVICE_POWER_STATE;
-    SystemWake : SYSTEM_POWER_STATE;
-    DeviceWake : SYSTEM_POWER_STATE;
-    D1Latency : Cardinal;
-    D2Latency : Cardinal;
-    D3Latency : Cardinal;
-    end;
-  PDEVICE_CAPABILITIES = ^DEVICE_CAPABILITIES;
-
   TDriverMajorFunctions = Packed Array [0..27] Of Pointer;
 
   TSnapshotType = (stDriverList, stDriverInfo, stDeviceInfo);
-
-  TDeviceCapabilities = Record
-    Version : Cardinal;
-    DeviceD1 : Boolean;
-    DeviceD2 : Boolean;
-    LockSupported : Boolean;
-    EjectSupported : Boolean;
-    Removable : Boolean;
-    DockDevice : Boolean;
-    UniqueId : Boolean;
-    SilentInstall : Boolean;
-    RawDeviceOK : Boolean;
-    SurpriseRemovalOK : Boolean;
-    WakeFromD0 : Boolean;
-    wakeFromD1 : Boolean;
-    WakeFromD2 : Boolean;
-    wakeFromD3 : Boolean;
-    HardwareDisabled : Boolean;
-    NonDynamic : Boolean;
-    WarmEjectSupported : Boolean;
-    NoDisplayInUI : Boolean;
-    Address : Cardinal;
-    UINumber : Cardinal;
-    State : Array [0..POWER_SYSTEM_MAXIMUM - 1] Of DEVICE_POWER_STATE;
-    SystemWake : SYSTEM_POWER_STATE;
-    DeviceAke : DEVICE_POWER_STATE;
-    D1Latency : Cardinal;
-    D2Latency : Cardinal;
-    D3Latency : Cardinal;
-    end;
-  PDeviceCapabilities = ^TDeviceCapabilities;
-
-  TVpbSnapshot = Record
-    VpbAddress : Pointer;
-    Name : WideString;
-    FileSystemDevice : Pointer;
-    VolumeDevice : Pointer;
-    Flags : Cardinal;
-    ReferenceCount : Cardinal;
-    end;
-  PVpbSnapshot = ^TVpbSnapshot;
-
-  TDeviceSnapshot = Record
-    Name : WideString;
-    Address : Pointer;
-    DriverName : WideString;
-    DriverAddress : Pointer;
-    NumberOfLowerDevices : Integer;
-    LowerDevices : Array Of Pointer;
-    NumberOfUpperDevices : Integer;
-    UpperDevices : Array Of Pointer;
-    DisplayName : WideString;
-    Description : WideString;
-    Vendor : WideString;
-    ClassName : WideString;
-    Location : WideString;
-    Enumerator : WideString;
-    ClassGuid : WideString;
-    Flags : Cardinal;
-    Characteristics : Cardinal;
-    DeviceType : Cardinal;
-    DiskDeviceAddress : Pointer;
-    Vpb : PVpbSnapshot;
-    DeviceId : WideString;
-    InstanceId : WideString;
-    HardwareIds : Array Of WideString;
-    CompatibleIds : Array Of WideString;
-    RemovalRelations : Array Of Pointer;
-    EjectRelations : Array Of Pointer;
-    DeviceNode : Pointer;
-    Child : Pointer;
-    Parent : Pointer;
-    Sibling : Pointer;
-    ExtensionFlags : Cardinal;
-    PowerFlags : Cardinal;
-    Capabilities : TDeviceCapabilities;
-    end;
-  PDeviceSnapshot = ^TDeviceSnapshot;
-
-  TDriverSnapshot = Record
-    Name : WideString;
-    Address : Pointer;
-    DriverEntry : Pointer;
-    DriverUnload : Pointer;
-    StartIo : Pointer;
-    Flags : Cardinal;
-    ImageBase : Pointer;
-    ImageSize : Cardinal;
-    ImagePath : WideString;
-    MajorFunction : TDriverMajorFunctions;
-    NumberOfDevices : Integer;
-    Devices : Array Of Pointer;
-    end;
-  PDriverSnapshot = ^TDriverSnapshot;
 
   TSnapshot = Record
     NumberOfDrivers : Integer;
@@ -184,6 +51,8 @@ Type
     NumberOfDevices : NativeInt;
     DevicesOffset : NativeInt;
     MajorFunction : TDriverMajorFunctions;
+    FastIoAddress : Pointer;
+    FastIoDispatch : FAST_IO_DISPATCH;
     end;
   PSNAPSHOT_DRIVERINFO = ^SNAPSHOT_DRIVERINFO;
 
@@ -249,12 +118,33 @@ Type
     end;
   PSNAPSHOT_DEVICEINFO = ^SNAPSHOT_DEVICEINFO;
 
+  _SPECIAL_VALUES = Record
+    Case Integer Of
+      0 : (
+        RoutineAddress : Array [0..8] Of Pointer;
+      );
+      1 : (
+        IopInvalidDeviceRequest : Pointer;
+        FsRtlAcquireFileExclusive : Pointer;
+        FsRtlCopyRead : Pointer;
+        FsRtlCopyWrite : Pointer;
+        FsRtlMdlReadDev : Pointer;
+        FsRtlMdlReadCompleteDev : Pointer;
+        FsRtlPrepareMdlWriteDev : Pointer;
+        FsRtlMdlWriteCompleteDev : Pointer;
+        FsRtlReleaseFile : Pointer;
+      );
+    end;
+  SPECIAL_VALUES = _SPECIAL_VALUES;
+  PSPECIAL_VALUES = ^SPECIAL_VALUES;
+
 Function DriverInstall:Boolean;
 Procedure DriverUninstall;
 Function DriverLoad:Boolean;
 Procedure DriverUnload;
 
 Function DriverCreateSnapshot(AFlags:Cardinal; Var ASnapshot:Pointer):Boolean;
+Function DriverGetSpecialValues(AValues:PSPECIAL_VALUES):Boolean;
 Function DriverFreeSnapshot(ASnapshot:Pointer):Boolean;
 
 Implementation
@@ -268,6 +158,7 @@ Const
   DriverDeviceName = '\\.\VrtuleTree';
 
   IOCTL_VRTULETREE_CREATE_SNAPSHOT          = $228008;
+  IOCTL_VRTULETREE_SPECIAL_VALUES_GET       = $22800c;
 
 
 Var
@@ -309,6 +200,12 @@ Var
   Dummy : DWORD;
 begin
 Result := DeviceIoControl(hDevice, ACode, AInBuffer, AInBufferLength, AOutBUffer, AOutBufferLength, Dummy, Nil);
+end;
+
+Function DriverGetSpecialValues(AValues:PSPECIAL_VALUES):Boolean;
+begin
+ZeroMemory(AValues, SizeOf(SPECIAL_VALUES));
+Result := DriverIOCTL(IOCTL_VRTULETREE_SPECIAL_VALUES_GET, Nil, 0, AValues, SizeOf(SPECIAL_VALUES));
 end;
 
 Function DriverCreateSnapshot(AFlags:Cardinal; Var ASnapshot:Pointer):Boolean;

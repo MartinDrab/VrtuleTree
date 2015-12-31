@@ -4,14 +4,14 @@ Interface
 
 Uses
   Logger, Snapshot, Classes, LogSettings,
-  VTreeDriver;
+  VTreeDriver, DriverSnapshot, DeviceSnapshot;
 
 Type
   TSnapshotTextLogger = Class (TSnapshotLogger)
   Protected
-Function GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean; Override;
-    Function GenerateDriverRecordLog(ARecord:PDriverSnapshot; ALog:TStrings):Boolean; Override;
-    Function GenerateDeviceRecordLog(ARecord:PDeviceSnapshot; ALog:TStrings):Boolean; Override;
+    Function GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean; Override;
+    Function GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean; Override;
+    Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean; Override;
     Function GenerateOSVersionInfo(ALog:TStrings):Boolean; Override;
     Function GenerateVTHeader(ALog:TStrings):Boolean; Override;
   end;
@@ -52,7 +52,7 @@ ALog.Add('');
 Result := True;
 end;
 
-Function DeviceCapabilitiesFlagsToStr(Var ADC:TDeviceCapabilities):WideString;
+Function DeviceCapabilitiesFlagsToStr(Const ADC:TDeviceCapabilities):WideString;
 begin
 Result := '';
 If ADC.DeviceD1 Then
@@ -96,10 +96,10 @@ If Result <> '' Then
   Delete(Result, Length(Result) - 1, 2);
 end;
 
-Function TSnapshotTextLogger.GenerateDeviceRecordLog(ARecord:PDeviceSnapshot; ALog:TStrings):Boolean;
+Function TSnapshotTextLogger.GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean;
 Var
   I : Integer;
-  tmp : PDeviceSnapshot;
+  tmp : TDeviceSnapshot;
   DL : TDeviceLogSettings;
 begin
 DL := FLogSettings.DeviceSettings;
@@ -233,7 +233,7 @@ If (DL.IncludeUpperDevices) And
 Result := True;
 end;
 
-Function TSnapshotTextLogger.GenerateDriverRecordLog(ARecord:PDriverSnapshot; ALog:TStrings):Boolean;
+Function TSnapshotTextLogger.GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean;
 Var
   I : Integer;
   DL : TDriverLogSettings;

@@ -1,5 +1,8 @@
 Unit Kernel;
 
+{$Z4}
+{$MINENUMSIZE 4}
+
 Interface
 
 Uses
@@ -198,7 +201,110 @@ Const
   DEVCAP_WARM_EJECT_SUPPORTED   = $10000;
   DEVCAP_NO_DISPLAY_IN_UI       = $20000;
 
+Type
+  _FAST_IO_DISPATCH = Record
+    SizeOfFastIoDispatch : Cardinal;
+    Case Integer Of
+      0 : (
+        Routines : Array [0..26] Of Pointer);
+      1 : (
+        FastIoCheckIfPossible : Pointer;
+        FastIoRead : Pointer;
+        FastIoWrite : Pointer;
+        FastIoQueryBasicInfo : Pointer;
+        FastIoQueryStandardInfo : Pointer;
+        FastIoLock : Pointer;
+        FastIoUnlockSingle : Pointer;
+        FastIoUnlockAll : Pointer;
+        FastIoUnlockAllByKey : Pointer;
+        FastIoDeviceControl : Pointer;
+        AcquireFileForNtCreateSection : Pointer;
+        ReleaseFileForNtCreateSection : Pointer;
+        FastIoDetachDevice : Pointer;
+        FastIoQueryNetworkOpenInfo : Pointer;
+        AcquireForModWrite : Pointer;
+        MdlRead : Pointer;
+        MdlReadComplete : Pointer;
+        PrepareMdlWrite : Pointer;
+        MdlWriteComplete : Pointer;
+        FastIoReadCompressed : Pointer;
+        FastIoWriteCompressed : Pointer;
+        MdlReadCompleteCompressed : Pointer;
+        MdlWriteCompleteCompressed : Pointer;
+        FastIoQueryOpen : Pointer;
+        ReleaseForModWrite : Pointer;
+        AcquireForCcFlush : Pointer;
+        ReleaseForCcFlush : Pointer);
+    end;
+  FAST_IO_DISPATCH = _FAST_IO_DISPATCH;
+  PFAST_IO_DISPATCH = ^FAST_IO_DISPATCH;
 
+  DEVICE_POWER_STATE = (
+    PowerDeviceUnspecified  = 0,
+    PowerDeviceD0           = 1,
+    PowerDeviceD1           = 2,
+    PowerDeviceD2           = 3,
+    PowerDeviceD3           = 4,
+    PowerDeviceMaximum      = 5
+  );
+
+  SYSTEM_POWER_STATE = (
+    PowerSystemUnspecified  = 0,
+    PowerSystemWorking      = 1,
+    PowerSystemSleeping1    = 2,
+    PowerSystemSleeping2    = 3,
+    PowerSystemSleeping3    = 4,
+    PowerSystemHibernate    = 5,
+    PowerSystemShutdown     = 6,
+    PowerSystemMaximum      = 7
+  );
+
+Const
+  POWER_SYSTEM_MAXIMUM = 7;
+
+Type
+  DEVICE_CAPABILITIES = Record
+    SIze : Word;
+    Version : Word;
+    Flags : Cardinal;
+    Address : Cardinal;
+    UINumber : Cardinal;
+    DeviceState : Array [0..POWER_SYSTEM_MAXIMUM - 1] Of DEVICE_POWER_STATE;
+    SystemWake : SYSTEM_POWER_STATE;
+    DeviceWake : SYSTEM_POWER_STATE;
+    D1Latency : Cardinal;
+    D2Latency : Cardinal;
+    D3Latency : Cardinal;
+    end;
+  PDEVICE_CAPABILITIES = ^DEVICE_CAPABILITIES;
+
+Const
+  STATUS_SUCCESS              =           0;
+  STATUS_INFO_LENGTH_MISMATCH =   $C0000004;
+  STATUS_INSUFFICIENT_RESOURCES = $C000009A;
+
+Type
+  SYSTEM_MODULE = Record
+    Section : THandle;
+    MappedBase : Pointer;
+    ImageBase : Pointer;
+    ImageSize : Cardinal;
+    Flags : Cardinal;
+    LoadOrderIndex : Word;
+    InitOrderIndex : Word;
+    LoadCount : Word;
+    OffsetToFileName : Word;
+    FullPathName : Packed Array [0..255] Of AnsiChar;
+    end;
+  PSYSTEM_MODULE = ^SYSTEM_MODULE;
+
+  SYSTEM_MODULE_INFORMATION = Record
+    Count : Cardinal;
+    Modules : Array [0..0] Of SYSTEM_MODULE;
+    end;
+  PSYSTEM_MODULE_INFORMATION = ^SYSTEM_MODULE_INFORMATION;
+
+Function NtQuerySystemInformation(SystemInformationClass:Cardinal; SystemInformation:Pointer; SystemInformationLength:Cardinal; Var ReturnLength:Cardinal):Cardinal; StdCall; External 'ntdll.dll';
 
 Function IrpMajorToStr(AMajor:ULONG):WideString;
 Function DriverFlagsToStr(AFlags:Cardinal):WideString;
@@ -212,6 +318,7 @@ Function DeviceExtensionFlagsToStr(AFlags:Cardinal):WideString;
 Function DeviceExtensionFlagToStr(AFlag:Cardinal):WideString;
 Function DeviceIDListToStr(AIDList : Array Of WideString):WideString;
 Function DeviceRelationsToStr(AArray : Array Of Pointer):WideString;
+Function FastIoIndexToStr(AIndex:Cardinal):WideString;
 
 Implementation
 
@@ -526,11 +633,46 @@ Result := '';
 For I := Low(AArray) To High(AArray) Do
   Result := Format('0x%p, ', [AArray[I]]);
 
-  If Result <> '' Then
+If Result <> '' Then
   System.Delete(Result, Length(Result) - 1, 2);
 end;
 
-
+Function FastIoIndexToStr(AIndex:Cardinal):WideString;
+Const
+  strArray : Array [0..26] Of WideString = (
+    'FastIoCheckIfPossible',
+    'FastIoRead',
+    'FastIoWrite',
+    'FastIoQueryBasicInfo',
+    'FastIoQueryStandardInfo',
+    'FastIoLock',
+    'FastIoUnlockSingle',
+    'FastIoUnlockAll',
+    'FastIoUnlockAllByKey',
+    'FastIoDeviceControl',
+    'AcquireFileForNtCreateSection',
+    'ReleaseFileForNtCreateSection',
+    'FastIoDetachDevice',
+    'FastIoQueryNetworkOpenInfo',
+    'AcquireForModWrite',
+    'MdlRead',
+    'MdlReadComplete',
+    'PrepareMdlWrite',
+    'MdlWriteComplete',
+    'FastIoReadCompressed',
+    'FastIoWriteCompressed',
+    'MdlReadCompleteCompressed',
+    'MdlWriteCompleteCompressed',
+    'FastIoQueryOpen',
+    'ReleaseForModWrite',
+    'AcquireForCcFlush',
+    'ReleaseForCcFlush'
+  );
+begin
+If AIndex < 27 Then
+  Result := strArray[AIndex]
+Else Result := Format('<unknown> (%d)', [AIndex]);
+end;
 
 End.
 

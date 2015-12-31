@@ -329,6 +329,7 @@
     <ClCompile Include="allocator.c" />
     <ClCompile Include="driver.c" />
     <ClCompile Include="snapshot.c" />
+    <ClCompile Include="special-values.c" />
     <ClCompile Include="utils-devices.c" />
     <ClCompile Include="utils-dym-array.c" />
     <ClCompile Include="utils-mem.c" />
@@ -342,6 +343,7 @@
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="snapshot.h" />
+    <ClInclude Include="special-values.h" />
     <ClInclude Include="utils-devices.h" />
     <ClInclude Include="utils-dym-array.h" />
     <ClInclude Include="utils-mem.h" />

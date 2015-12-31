@@ -11,6 +11,14 @@
 #include <ntifs.h>
 
 
+typedef struct _DEVICE_NODE_PART {
+	struct _DEVICE_NODE_PART *Sibling;
+	struct _DEVICE_NODE_PART *Child;
+	struct _DEVICE_NODE_PART *Parent;
+} DEVICE_NODE_PART, *PDEVICE_NODE_PART;
+
+
+
 /************************************************************************/
 /*                                  PUBLIC ROUTINE HEADERS              */
 /************************************************************************/

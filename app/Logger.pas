@@ -4,7 +4,7 @@ Interface
 
 Uses
   Snapshot, LogSettings, Classes,
-  VTreeDriver;
+  VTreeDriver, DriverSnapshot, DeviceSnapshot;
 
 Type
   TSnapshotLogger = Class
@@ -12,8 +12,8 @@ Type
     FSnapshot : TVTreeSnapshot;
     FLogSettings : TLogSettings;
     Function GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean; Virtual; Abstract;
-    Function GenerateDriverRecordLog(ARecord:PDriverSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
-    Function GenerateDeviceRecordLog(ARecord:PDeviceSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
+    Function GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
+    Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
     Function GenerateOSVersionInfo(ALog:TStrings):Boolean; Virtual; Abstract;
     Function GenerateVTHeader(ALog:TStrings):Boolean; Virtual; Abstract;
   Public
@@ -42,8 +42,8 @@ end;
 Function TSnapshotLogger.Generate(ALog:TStrings):Boolean;
 Var
   I, J : Integer;
-  tmp : PDeviceSnapshot;
-  DR : PDriverSnapshot;
+  tmp : TDeviceSnapshot;
+  DR : TDriverSnapshot;
 begin
 Result := True;
 If FLogSettings.General.IncludeVTHeader Then

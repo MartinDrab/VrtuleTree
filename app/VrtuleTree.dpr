@@ -11,7 +11,12 @@ uses
   Snapshot in 'Snapshot.pas',
   Logger in 'Logger.pas',
   TextLogger in 'TextLogger.pas',
-  AboutForm in 'AboutForm.pas' {AboutBox};
+  AboutForm in 'AboutForm.pas' {AboutBox},
+  DeviceSnapshot in 'DeviceSnapshot.pas',
+  AbstractSnapshotRecord in 'AbstractSnapshotRecord.pas',
+  DriverSnapshot in 'DriverSnapshot.pas',
+  DeviceDrivers in 'DeviceDrivers.pas',
+  CodeSigning in 'CodeSigning.pas';
 
 {$R *.res}
 

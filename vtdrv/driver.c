@@ -4,6 +4,7 @@
 #include "allocator.h"
 #include "snapshot.h"
 #include "ioctls.h"
+#include "special-values.h"
 #include "driver.h"
 
 
@@ -74,7 +75,13 @@ static NTSTATUS DriverDeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 				}
 			} else status = STATUS_BUFFER_TOO_SMALL;
 			break;
-
+		case IOCTL_VTREE_SPECIAL_VALUS_GET:
+			if (outBufferLength == sizeof(IOCTL_VTREE_SPECIAL_VALUS_GET_OUTPUT)) {
+				SpecialValuesGet((PIOCTL_VTREE_SPECIAL_VALUS_GET_OUTPUT)outBuffer);
+				Irp->IoStatus.Information = sizeof(IOCTL_VTREE_SPECIAL_VALUS_GET_OUTPUT);
+				status = STATUS_SUCCESS;
+			}
+			break;
 		default:
 			DEBUG_ERROR("Invalid device control requiest 0x%x", controlCode);
 			status = STATUS_INVALID_DEVICE_REQUEST;
@@ -164,6 +171,7 @@ static VOID DriverUnload(PDRIVER_OBJECT DriverObject)
 	DEBUG_ENTER_FUNCTION("DriverObject=0x%p", DriverObject);
 
 	DriverFinit(DriverObject);
+	SpecialValuesModuleFinit();
 #ifdef _DEBUG
 	DebugAllocatorModuleFinit();
 #endif
@@ -186,7 +194,13 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
 	status = STATUS_SUCCESS;
 #endif
 	if (NT_SUCCESS(status)) {
-		status = DriverInit(DriverObject);
+		status = SpecialValuesModuleInit(DriverObject);
+		if (NT_SUCCESS(status)) {
+			status = DriverInit(DriverObject);
+			if (!NT_SUCCESS(status))
+				SpecialValuesModuleFinit();
+		}
+
 		if (!NT_SUCCESS(status)) {
 #ifdef _DEBUG
 			DebugAllocatorModuleFinit();

@@ -27,6 +27,8 @@ typedef struct _SNAPSHOT_DRIVER_INFO {
 	ULONG_PTR NumberOfDevices;
 	ULONG_PTR DevicesOffset;  
 	PDRIVER_DISPATCH MajorFunctions [IRP_MJ_MAXIMUM_FUNCTION + 1];
+	PVOID FastIoAddress;
+	FAST_IO_DISPATCH FastIo;
 } SNAPSHOT_DRIVER_INFO, *PSNAPSHOT_DRIVER_INFO;
 
 typedef struct _SNAPSHOT_VPB_INFO {

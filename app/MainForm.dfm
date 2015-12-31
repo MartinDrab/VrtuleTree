@@ -889,11 +889,9 @@ object Form1: TForm1
     Top = 0
     Width = 462
     Height = 553
-    ActivePage = DeviceTabSheet
+    ActivePage = OtherSettingsTabSheet
     Align = alClient
     TabOrder = 1
-    ExplicitLeft = 222
-    ExplicitTop = -192
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
       object DeviceScrollBox: TScrollBox
@@ -1287,7 +1285,6 @@ object Form1: TForm1
             TabOrder = 0
             ViewStyle = vsReport
             OnDblClick = DriverDevicesJumpOnEvent
-            ExplicitHeight = 361
           end
         end
         object DeviceVPBGroupBox: TGroupBox
@@ -1583,7 +1580,6 @@ object Form1: TForm1
             RowSelect = True
             TabOrder = 0
             ViewStyle = vsReport
-            ExplicitHeight = 273
           end
         end
       end
@@ -1591,248 +1587,336 @@ object Form1: TForm1
     object DriverTabSheet: TTabSheet
       Caption = 'Driver'
       ImageIndex = 1
-      object DriverDevicesGroupBox: TGroupBox
-        Left = 0
-        Top = 209
-        Width = 454
-        Height = 104
-        Align = alTop
-        Caption = 'Devices'
-        TabOrder = 0
-        object DriverDevicesListView: TListView
-          Left = 2
-          Top = 15
-          Width = 450
-          Height = 87
-          Align = alClient
-          Columns = <
-            item
-              AutoSize = True
-              Caption = 'Name'
-            end
-            item
-              Caption = 'Address'
-              Width = 150
-            end>
-          ReadOnly = True
-          RowSelect = True
-          TabOrder = 0
-          ViewStyle = vsReport
-          OnDblClick = DriverDevicesJumpOnEvent
-        end
-      end
-      object DriverMajorFunctionGroupBox: TGroupBox
-        Left = 0
-        Top = 313
-        Width = 454
-        Height = 190
-        Align = alTop
-        Caption = 'Major Function'
-        TabOrder = 1
-        object MajorFunctionListview: TListView
-          Left = 2
-          Top = 15
-          Width = 450
-          Height = 173
-          Align = alClient
-          Columns = <
-            item
-              Caption = 'Function'
-              Width = 120
-            end
-            item
-              AutoSize = True
-              Caption = 'Driver'
-            end
-            item
-              Caption = 'Address'
-              Width = 150
-            end>
-          ReadOnly = True
-          RowSelect = True
-          TabOrder = 0
-          ViewStyle = vsReport
-          OnDblClick = DriverMajorFunctionJumpOnEvent
-        end
-      end
-      object DriverGeneralInfoPanel: TPanel
+      object DriverScrollBox: TScrollBox
         Left = 0
         Top = 0
         Width = 454
-        Height = 209
-        Align = alTop
-        TabOrder = 2
-        object DriverAddressLEdit: TLabeledEdit
-          Left = 2
-          Top = 22
-          Width = 135
-          Height = 21
-          EditLabel.Width = 73
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Object address'
-          ReadOnly = True
-          TabOrder = 0
-          OnDblClick = DriverJumpOnEvent
-        end
-        object DriverNameLEdit: TLabeledEdit
-          Left = 152
-          Top = 18
-          Width = 145
-          Height = 21
-          EditLabel.Width = 27
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Name'
-          ReadOnly = True
-          TabOrder = 1
-          OnDblClick = DriverJumpOnEvent
-        end
-        object LabeledEdit1: TLabeledEdit
-          Left = 2
-          Top = 64
-          Width = 135
-          Height = 21
-          EditLabel.Width = 97
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image base address'
-          ReadOnly = True
-          TabOrder = 2
-        end
-        object LabeledEdit2: TLabeledEdit
-          Left = 152
-          Top = 64
-          Width = 145
-          Height = 21
-          EditLabel.Width = 51
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image size'
-          ReadOnly = True
+        Height = 525
+        HorzScrollBar.Visible = False
+        VertScrollBar.Range = 750
+        Align = alClient
+        AutoScroll = False
+        TabOrder = 0
+        object DriverDevicesGroupBox: TGroupBox
+          Left = 0
+          Top = 209
+          Width = 433
+          Height = 104
+          Align = alTop
+          Caption = 'Devices'
           TabOrder = 3
-        end
-        object LabeledEdit3: TLabeledEdit
-          Left = 2
-          Top = 104
-          Width = 135
-          Height = 21
-          EditLabel.Width = 55
-          EditLabel.Height = 13
-          EditLabel.Caption = 'DriverEntry'
-          ReadOnly = True
-          TabOrder = 4
-        end
-        object LabeledEdit4: TLabeledEdit
-          Left = 152
-          Top = 104
-          Width = 145
-          Height = 21
-          EditLabel.Width = 62
-          EditLabel.Height = 13
-          EditLabel.Caption = 'DriverUnload'
-          NumbersOnly = True
-          TabOrder = 5
-        end
-        object LabeledEdit5: TLabeledEdit
-          Left = 2
-          Top = 182
-          Width = 295
-          Height = 21
-          EditLabel.Width = 55
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Image path'
-          ReadOnly = True
-          TabOrder = 6
-        end
-        object LabeledEdit6: TLabeledEdit
-          Left = 2
-          Top = 144
-          Width = 135
-          Height = 21
-          EditLabel.Width = 36
-          EditLabel.Height = 13
-          EditLabel.Caption = 'StartIO'
-          ReadOnly = True
-          TabOrder = 7
-        end
-        object LabeledEdit7: TLabeledEdit
-          Left = 152
-          Top = 144
-          Width = 145
-          Height = 21
-          EditLabel.Width = 25
-          EditLabel.Height = 13
-          EditLabel.Caption = 'Flags'
-          ReadOnly = True
-          TabOrder = 8
-        end
-        object DriverFlagsGroupBox: TGroupBox
-          Left = 303
-          Top = 0
-          Width = 146
-          Height = 201
-          Caption = 'Flags'
-          TabOrder = 9
-          object CheckBox36: TCheckBox
-            Left = 11
-            Top = 43
-            Width = 103
-            Height = 17
-            Caption = 'Legacy driver'
+          object DriverDevicesListView: TListView
+            Left = 2
+            Top = 15
+            Width = 429
+            Height = 87
+            Align = alClient
+            Columns = <
+              item
+                AutoSize = True
+                Caption = 'Name'
+              end
+              item
+                Caption = 'Address'
+                Width = 150
+              end>
+            ReadOnly = True
+            RowSelect = True
             TabOrder = 0
+            ViewStyle = vsReport
+            OnDblClick = DriverDevicesJumpOnEvent
           end
-          object CheckBox37: TCheckBox
-            Left = 11
-            Top = 66
-            Width = 103
-            Height = 17
-            Caption = 'Built-in driver'
+        end
+        object DriverMajorFunctionGroupBox: TGroupBox
+          Left = 0
+          Top = 313
+          Width = 433
+          Height = 190
+          Align = alTop
+          Caption = 'Major Function'
+          TabOrder = 1
+          object MajorFunctionListview: TListView
+            Left = 2
+            Top = 15
+            Width = 429
+            Height = 173
+            Align = alClient
+            Columns = <
+              item
+                Caption = 'Function'
+                Width = 120
+              end
+              item
+                AutoSize = True
+                Caption = 'Driver'
+              end
+              item
+                Caption = 'Address'
+                Width = 150
+              end>
+            ReadOnly = True
+            RowSelect = True
+            TabOrder = 0
+            ViewStyle = vsReport
+            OnDblClick = DriverMajorFunctionJumpOnEvent
+          end
+        end
+        object DriverGeneralInfoPanel: TPanel
+          Left = 0
+          Top = 0
+          Width = 433
+          Height = 209
+          Align = alTop
+          TabOrder = 2
+          object DriverAddressLEdit: TLabeledEdit
+            Left = 2
+            Top = 22
+            Width = 135
+            Height = 21
+            EditLabel.Width = 73
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Object address'
+            ReadOnly = True
+            TabOrder = 0
+            OnDblClick = DriverJumpOnEvent
+          end
+          object DriverNameLEdit: TLabeledEdit
+            Left = 152
+            Top = 18
+            Width = 145
+            Height = 21
+            EditLabel.Width = 27
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Name'
+            ReadOnly = True
             TabOrder = 1
+            OnDblClick = DriverJumpOnEvent
           end
-          object CheckBox38: TCheckBox
-            Left = 11
-            Top = 89
-            Width = 132
-            Height = 17
-            Caption = 'Reinitialization'
+          object LabeledEdit1: TLabeledEdit
+            Left = 2
+            Top = 64
+            Width = 135
+            Height = 21
+            EditLabel.Width = 97
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Image base address'
+            ReadOnly = True
             TabOrder = 2
           end
-          object CheckBox39: TCheckBox
-            Left = 11
-            Top = 112
-            Width = 103
-            Height = 17
-            Caption = 'Initialized'
+          object LabeledEdit2: TLabeledEdit
+            Left = 152
+            Top = 64
+            Width = 145
+            Height = 21
+            EditLabel.Width = 51
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Image size'
+            ReadOnly = True
             TabOrder = 3
           end
-          object CheckBox40: TCheckBox
-            Left = 11
-            Top = 135
-            Width = 132
-            Height = 17
-            Caption = 'Boot reinitialization'
+          object LabeledEdit3: TLabeledEdit
+            Left = 2
+            Top = 104
+            Width = 135
+            Height = 21
+            EditLabel.Width = 55
+            EditLabel.Height = 13
+            EditLabel.Caption = 'DriverEntry'
+            ReadOnly = True
             TabOrder = 4
           end
-          object CheckBox41: TCheckBox
-            Left = 11
-            Top = 158
-            Width = 103
-            Height = 17
-            Caption = 'Legacy resources'
+          object LabeledEdit4: TLabeledEdit
+            Left = 152
+            Top = 104
+            Width = 145
+            Height = 21
+            EditLabel.Width = 62
+            EditLabel.Height = 13
+            EditLabel.Caption = 'DriverUnload'
+            NumbersOnly = True
             TabOrder = 5
           end
-          object CheckBox42: TCheckBox
-            Left = 11
-            Top = 181
-            Width = 134
-            Height = 17
-            Caption = 'Base filesystem driver'
+          object LabeledEdit5: TLabeledEdit
+            Left = 2
+            Top = 182
+            Width = 295
+            Height = 21
+            EditLabel.Width = 55
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Image path'
+            ReadOnly = True
             TabOrder = 6
           end
-          object CheckBox35: TCheckBox
-            Left = 11
-            Top = 20
-            Width = 134
-            Height = 17
-            Caption = 'DriverUnload invoked'
+          object LabeledEdit6: TLabeledEdit
+            Left = 2
+            Top = 144
+            Width = 135
+            Height = 21
+            EditLabel.Width = 36
+            EditLabel.Height = 13
+            EditLabel.Caption = 'StartIO'
+            ReadOnly = True
             TabOrder = 7
+          end
+          object LabeledEdit7: TLabeledEdit
+            Left = 152
+            Top = 144
+            Width = 145
+            Height = 21
+            EditLabel.Width = 25
+            EditLabel.Height = 13
+            EditLabel.Caption = 'Flags'
+            ReadOnly = True
+            TabOrder = 8
+          end
+          object DriverFlagsGroupBox: TGroupBox
+            Left = 303
+            Top = 0
+            Width = 146
+            Height = 201
+            Caption = 'Flags'
+            TabOrder = 9
+            object CheckBox36: TCheckBox
+              Left = 11
+              Top = 43
+              Width = 103
+              Height = 17
+              Caption = 'Legacy driver'
+              TabOrder = 0
+            end
+            object CheckBox37: TCheckBox
+              Left = 11
+              Top = 66
+              Width = 103
+              Height = 17
+              Caption = 'Built-in driver'
+              TabOrder = 1
+            end
+            object CheckBox38: TCheckBox
+              Left = 11
+              Top = 89
+              Width = 132
+              Height = 17
+              Caption = 'Reinitialization'
+              TabOrder = 2
+            end
+            object CheckBox39: TCheckBox
+              Left = 11
+              Top = 112
+              Width = 103
+              Height = 17
+              Caption = 'Initialized'
+              TabOrder = 3
+            end
+            object CheckBox40: TCheckBox
+              Left = 11
+              Top = 135
+              Width = 132
+              Height = 17
+              Caption = 'Boot reinitialization'
+              TabOrder = 4
+            end
+            object CheckBox41: TCheckBox
+              Left = 11
+              Top = 158
+              Width = 103
+              Height = 17
+              Caption = 'Legacy resources'
+              TabOrder = 5
+            end
+            object CheckBox42: TCheckBox
+              Left = 11
+              Top = 181
+              Width = 134
+              Height = 17
+              Caption = 'Base filesystem driver'
+              TabOrder = 6
+            end
+            object CheckBox35: TCheckBox
+              Left = 11
+              Top = 20
+              Width = 134
+              Height = 17
+              Caption = 'DriverUnload invoked'
+              TabOrder = 7
+            end
+          end
+        end
+        object FastIoDispatchGroupBox: TGroupBox
+          Left = 0
+          Top = 503
+          Width = 433
+          Height = 247
+          Align = alTop
+          Caption = 'Fast I/O Dispatch'
+          TabOrder = 0
+          object FastIoDispatchPanel: TPanel
+            Left = 2
+            Top = 15
+            Width = 429
+            Height = 50
+            Align = alTop
+            TabOrder = 0
+            object Label11: TLabel
+              Left = 8
+              Top = 8
+              Width = 39
+              Height = 13
+              Caption = 'Address'
+            end
+            object Label12: TLabel
+              Left = 10
+              Top = 27
+              Width = 19
+              Height = 13
+              Caption = 'Size'
+            end
+            object FastIoDispatchAddressEdit: TEdit
+              Left = 88
+              Top = -4
+              Width = 209
+              Height = 21
+              Color = clBtnFace
+              ReadOnly = True
+              TabOrder = 0
+            end
+            object FastIoDispatchSizeEdit: TEdit
+              Left = 88
+              Top = 23
+              Width = 209
+              Height = 21
+              Color = clBtnFace
+              ReadOnly = True
+              TabOrder = 1
+            end
+          end
+          object FastIoDispatchListView: TListView
+            Left = 2
+            Top = 65
+            Width = 429
+            Height = 180
+            Align = alClient
+            Columns = <
+              item
+                AutoSize = True
+                Caption = 'Routine'
+              end
+              item
+                AutoSize = True
+                Caption = 'Module'
+              end
+              item
+                AutoSize = True
+                Caption = 'Address'
+              end>
+            ReadOnly = True
+            RowSelect = True
+            TabOrder = 1
+            ViewStyle = vsReport
+            ExplicitLeft = 16
+            ExplicitTop = 57
+            ExplicitWidth = 415
+            ExplicitHeight = 100
           end
         end
       end
@@ -1922,7 +2006,8 @@ object Form1: TForm1
             'Flags as string'
             'Major functions'
             'Number of devices'
-            'Devices')
+            'Devices'
+            'Fast IO dispatch')
           TabOrder = 0
         end
         object Panel4: TPanel
@@ -2107,7 +2192,6 @@ object Form1: TForm1
           Width = 145
           Height = 17
           Caption = 'Fast I/O dispatch'
-          Enabled = False
           TabOrder = 1
         end
         object CaptureDevnodeTreeCheckBox: TCheckBox
@@ -2116,9 +2200,92 @@ object Form1: TForm1
           Width = 145
           Height = 17
           Caption = 'Devnode tree'
-          Enabled = False
           TabOrder = 2
         end
+      end
+      object LoadedDriversSettingsGroupBox: TGroupBox
+        Left = 0
+        Top = 81
+        Width = 454
+        Height = 88
+        Align = alTop
+        Caption = 'Loaded Drivers'
+        TabOrder = 1
+        object LDVerifySignaturesCheckBox: TCheckBox
+          Left = 3
+          Top = 16
+          Width = 198
+          Height = 17
+          Caption = 'Verify digital signatures (binaries only)'
+          Checked = True
+          State = cbChecked
+          TabOrder = 0
+        end
+        object LDNoLifeTimeCheckBox: TCheckBox
+          Left = 3
+          Top = 32
+          Width = 198
+          Height = 17
+          Caption = 'No lifetime time stamps'
+          TabOrder = 1
+        end
+        object LDCheckCRLsCheckBox: TCheckBox
+          Left = 3
+          Top = 48
+          Width = 198
+          Height = 17
+          Caption = 'Check CRLs'
+          TabOrder = 2
+        end
+        object LDCertNamesCheckBox: TCheckBox
+          Left = 3
+          Top = 64
+          Width = 198
+          Height = 17
+          Caption = 'Capture certificate (cmmon) names'
+          Checked = True
+          State = cbChecked
+          TabOrder = 3
+        end
+      end
+    end
+    object LoadedDriversTabSheet: TTabSheet
+      Caption = 'Loaded Drivers'
+      ImageIndex = 4
+      OnShow = LoadedDriversTabSheetShow
+      object LoadedDriversListView: TListView
+        Left = 0
+        Top = 0
+        Width = 454
+        Height = 525
+        Align = alClient
+        Columns = <
+          item
+            Caption = 'Image Base'
+            Width = 75
+          end
+          item
+            Caption = 'Image Size'
+            Width = 75
+          end
+          item
+            AutoSize = True
+            Caption = 'File Name'
+          end
+          item
+            Caption = 'Signature'
+            Width = 90
+          end
+          item
+            AutoSize = True
+            Caption = 'Names'
+          end>
+        OwnerData = True
+        ReadOnly = True
+        RowSelect = True
+        TabOrder = 0
+        ViewStyle = vsReport
+        OnData = LoadedDriversListViewData
       end
     end
   end
@@ -2173,16 +2340,21 @@ object Form1: TForm1
           Checked = True
           OnClick = DisplayMenuItemClick
         end
+        object FastIODispatch1: TMenuItem
+          Caption = 'Fast IO Dispatch'
+          Checked = True
+          OnClick = DisplayMenuItemClick
+        end
       end
       object DeviceDisplayMenuItem: TMenuItem
         Caption = 'Device'
         object Lowerdevicestree1: TMenuItem
-          Caption = 'Lower devices (tree)'
+          Caption = 'Lower Devices (tree)'
           Checked = True
           OnClick = DisplayMenuItemClick
         end
         object Upperdevicestree1: TMenuItem
-          Caption = 'Upper devices (tree)'
+          Caption = 'Upper Devices (tree)'
           Checked = True
           OnClick = DisplayMenuItemClick
         end
@@ -2205,7 +2377,7 @@ object Form1: TForm1
           OnClick = DisplayMenuItemClick
         end
         object PnPinformation1: TMenuItem
-          Caption = 'PnP information'
+          Caption = 'PnP Information'
           Checked = True
           OnClick = DisplayMenuItemClick
         end
@@ -2225,12 +2397,12 @@ object Form1: TForm1
           OnClick = DisplayMenuItemClick
         end
         object Removalrelations1: TMenuItem
-          Caption = 'Removal relations'
+          Caption = 'Removal Relations'
           Checked = True
           OnClick = DisplayMenuItemClick
         end
         object Ejectrelations1: TMenuItem
-          Caption = 'Eject relations'
+          Caption = 'Eject Relations'
           Checked = True
           OnClick = DisplayMenuItemClick
         end
@@ -2238,6 +2410,27 @@ object Form1: TForm1
           Caption = 'Security'
           Checked = True
           OnClick = DisplayMenuItemClick
+        end
+        object DeviceNode1: TMenuItem
+          Caption = 'Device Node'
+          Checked = True
+          OnClick = DisplayMenuItemClick
+        end
+      end
+      object TreeTypeMenuItem: TMenuItem
+        Caption = 'Tree type'
+        object DeviceTreeMenuItem: TMenuItem
+          Caption = 'Device Tree'
+          Checked = True
+          GroupIndex = 1
+          RadioItem = True
+          OnClick = TreeTypeSubItemOnClick
+        end
+        object PnPTreeMenuItem: TMenuItem
+          Caption = 'PnP Tree'
+          GroupIndex = 1
+          RadioItem = True
+          OnClick = TreeTypeSubItemOnClick
         end
       end
     end

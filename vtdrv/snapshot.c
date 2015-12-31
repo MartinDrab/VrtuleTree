@@ -224,12 +224,12 @@ static NTSTATUS _GetDeviceVpbInfo(_In_ PDEVICE_OBJECT DeviceObject, _Out_ PSNAPS
             *VpbSnapshot = tmpVpb;
             status = STATUS_SUCCESS;
 		} else status = STATUS_INSUFFICIENT_RESOURCES;
-   } else status = STATUS_SUCCESS;
+	} else status = STATUS_SUCCESS;
 
-   IoReleaseVpbSpinLock(irql);
+	IoReleaseVpbSpinLock(irql);
 
-   DEBUG_EXIT_FUNCTION("0x%x, *VpbSnapshot=0x%p", status, *VpbSnapshot);
-   return status;
+	DEBUG_EXIT_FUNCTION("0x%x, *VpbSnapshot=0x%p", status, *VpbSnapshot);
+	return status;
 }
 
 
@@ -310,7 +310,9 @@ static NTSTATUS _GetDeviceAdvancedPnPInfo(_In_ ULONG SnapshotFlags, _In_ PDEVICE
 	PWCHAR deviceId = NULL;
 	PWCHAR instanceId = NULL;
 	PWCHAR hardwareIds = NULL;
+	ULONG hardwareIdsLen = 0;
 	PWCHAR compatibleIds = NULL;
+	ULONG compatibleIdsLen = 0;
 	DEVICE_CAPABILITIES capabilities;
 	PSNAPSHOT_DEVICE_RELATIONS_INFO removalRelations = NULL;
 	PSNAPSHOT_DEVICE_RELATIONS_INFO ejectRelations = NULL;
@@ -321,8 +323,10 @@ static NTSTATUS _GetDeviceAdvancedPnPInfo(_In_ ULONG SnapshotFlags, _In_ PDEVICE
 		UtilsQueryDeviceId(DeviceObject, BusQueryDeviceID, &deviceId);
 	
 	UtilsQueryDeviceId(DeviceObject, BusQueryInstanceID, &instanceId);
-	UtilsQueryDeviceId(DeviceObject, BusQueryHardwareIDs, &hardwareIds);
-	UtilsQueryDeviceId(DeviceObject, BusQueryCompatibleIDs, &compatibleIds);
+//	UtilsQueryDeviceId(DeviceObject, BusQueryHardwareIDs, &hardwareIds);
+//	UtilsQueryDeviceId(DeviceObject, BusQueryCompatibleIDs, &compatibleIds);
+	_GetWCharDeviceProperty(DeviceObject, DevicePropertyHardwareID, &hardwareIds, &hardwareIdsLen);
+	_GetWCharDeviceProperty(DeviceObject, DevicePropertyCompatibleIDs, &compatibleIds, &compatibleIdsLen);
 	status = _GetDeviceRelationsInfo(DeviceObject, RemovalRelations, &removalRelations);
 	if (NT_SUCCESS(status)) {
 		status = _GetDeviceRelationsInfo(DeviceObject, EjectionRelations, &ejectRelations);
@@ -377,10 +381,10 @@ static NTSTATUS _GetDeviceAdvancedPnPInfo(_In_ ULONG SnapshotFlags, _In_ PDEVICE
 	}
 
 	if (compatibleIds != NULL)
-		ExFreePool(compatibleIds);
+		HeapMemoryFree(compatibleIds);
 
 	if (hardwareIds != NULL)
-		ExFreePool(hardwareIds);
+		HeapMemoryFree(hardwareIds);
 
 	if (instanceId != NULL)
 		ExFreePool(instanceId);
@@ -570,6 +574,16 @@ static NTSTATUS _DeviceInfoSnapshotCreate(_In_ ULONG SnapshotFlags, _In_ PDEVICE
 						tmpDeviceInfo->Vpb = DeviceObject->Vpb;
 						devObjExtension = DeviceObject->DeviceObjectExtension;
 						tmpDeviceInfo->DeviceNode = devObjExtension->DeviceNode;
+						if ((SnapshotFlags & VTREE_SNAPSHOT_DEVNODE_TREE) &&
+							DeviceObject->Flags & DO_BUS_ENUMERATED_DEVICE &&
+							devObjExtension->DeviceNode != NULL) {
+							PDEVICE_NODE_PART devNodePart = (PDEVICE_NODE_PART)devObjExtension->DeviceNode;
+						
+							tmpDeviceInfo->Parent = devNodePart->Parent;
+							tmpDeviceInfo->Sibling = devNodePart->Sibling;
+							tmpDeviceInfo->Child = devNodePart->Child;
+						}
+
 						tmpDeviceInfo->ExtensionFlags = devObjExtension->ExtensionFlags;
 						tmpDeviceInfo->PowerFlags = devObjExtension->PowerFlags;
 						status = _SecurityInfoCreate(DeviceObject, &tmpDeviceInfo->Security);
@@ -714,8 +728,14 @@ static NTSTATUS _DriverSnapshotCreate(_In_ ULONG SnapshotFlags, _In_ PDRIVER_OBJ
 				tmpDriverInfo->Flags = DriverObject->Flags;
 				tmpDriverInfo->StartIo = DriverObject->DriverStartIo;
 				tmpDriverInfo->ObjectAddress = DriverObject;
-				for (i = 0; i < IRP_MJ_MAXIMUM_FUNCTION + 1; ++i)
-					tmpDriverInfo->MajorFunctions[i] = DriverObject->MajorFunction[i];
+				memcpy(tmpDriverInfo->MajorFunctions, DriverObject->MajorFunction, (IRP_MJ_MAXIMUM_FUNCTION + 1)*sizeof(DRIVER_DISPATCH*));
+				if (SnapshotFlags & VTREE_SNAPSHOT_FAST_IO_DISPATCH) {
+					PFAST_IO_DISPATCH f = DriverObject->FastIoDispatch;
+
+					tmpDriverInfo->FastIoAddress = f;
+					if (f != NULL)
+						memcpy(&tmpDriverInfo->FastIo, f, min(f->SizeOfFastIoDispatch, sizeof(FAST_IO_DISPATCH)));
+				}
 
 				tmpDriverInfo->NumberOfDevices = deviceArrayLength;
 				tmpDriverInfo->DevicesOffset = (ULONG_PTR)Data - (ULONG_PTR)tmpDriverInfo;

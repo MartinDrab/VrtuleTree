@@ -63,18 +63,17 @@ __declspec(dllimport) POBJECT_TYPE *IoDriverObjectType;
  */
 NTSTATUS _GetDeviceGUIDProperty(PDEVICE_OBJECT DeviceObject, DEVICE_REGISTRY_PROPERTY Property, PGUID Value)
 {
-   ULONG ReturnLength = 0;
-   NTSTATUS Status = STATUS_UNSUCCESSFUL;
-   DEBUG_ENTER_FUNCTION("DeviceObject=0x%p; Property=%u; Value=0x%p", DeviceObject, Property, Value);
+	ULONG returnLength = 0;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	DEBUG_ENTER_FUNCTION("DeviceObject=0x%p; Property=%u; Value=0x%p", DeviceObject, Property, Value);
 
-   RtlZeroMemory(Value, sizeof(GUID));
-   Status = IoGetDeviceProperty(DeviceObject, Property, sizeof(GUID), Value, &ReturnLength);
-   if (Status == STATUS_INVALID_DEVICE_REQUEST ||
-      Status == STATUS_OBJECT_NAME_NOT_FOUND)
-      Status = STATUS_SUCCESS;
+	memset(Value, 0, sizeof(GUID));
+	status = IoGetDeviceProperty(DeviceObject, Property, sizeof(GUID), Value, &returnLength);
+	if (status == STATUS_INVALID_DEVICE_REQUEST || status == STATUS_OBJECT_NAME_NOT_FOUND)
+		status = STATUS_SUCCESS;
 
-   DEBUG_EXIT_FUNCTION("0x%x", Status);
-   return Status;
+	DEBUG_EXIT_FUNCTION("0x%x", status);
+	return status;
 }
 
 
@@ -95,43 +94,43 @@ NTSTATUS _GetDeviceGUIDProperty(PDEVICE_OBJECT DeviceObject, DEVICE_REGISTRY_PRO
  */
 NTSTATUS _GetWCharDeviceProperty(PDEVICE_OBJECT DeviceObject, DEVICE_REGISTRY_PROPERTY Property, PWCHAR *Buffer, PULONG BufferLength)
 {
-   NTSTATUS Status = STATUS_UNSUCCESSFUL;
-   PVOID Tmp = NULL;
-   ULONG TmpSize = 64;
-   DEBUG_ENTER_FUNCTION("DeviceObject=0x%p; Property=%u; Buffer=0x%p; BufferLength=0x%p", DeviceObject, Property, Buffer, BufferLength);
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	PVOID tmp = NULL;
+	ULONG tmpSize = 64;
+	DEBUG_ENTER_FUNCTION("DeviceObject=0x%p; Property=%u; Buffer=0x%p; BufferLength=0x%p", DeviceObject, Property, Buffer, BufferLength);
 
-   do {
-      if (Tmp != NULL) {
-         HeapMemoryFree(Tmp);
-         Tmp = NULL;
-      }
+	do {
+		if (tmp != NULL) {
+			HeapMemoryFree(tmp);
+			tmpSize *= 2;
+			tmp = NULL;
+		}
 
-      Tmp = HeapMemoryAllocPaged(TmpSize);
-      if (Tmp != NULL) {
-         Status = IoGetDeviceProperty(DeviceObject, Property, TmpSize, Tmp, &TmpSize);
-         if (NT_SUCCESS(Status)) {
-            *BufferLength = TmpSize;
-            *Buffer = Tmp;
-         }
-      } else Status = STATUS_INSUFFICIENT_RESOURCES;
-   } while (Status == STATUS_BUFFER_TOO_SMALL);
+		tmp = HeapMemoryAllocPaged(tmpSize);
+		if (tmp != NULL) {
+			status = IoGetDeviceProperty(DeviceObject, Property, tmpSize, tmp, &tmpSize);
+			if (NT_SUCCESS(status)) {
+				*BufferLength = tmpSize;
+				*Buffer = tmp;
+			}
+		} else status = STATUS_INSUFFICIENT_RESOURCES;
+	} while (status == STATUS_BUFFER_TOO_SMALL);
 
-   if (!NT_SUCCESS(Status)) {
-      if (Tmp != NULL)
-         HeapMemoryFree(Tmp);
+	if (!NT_SUCCESS(status)) {
+		if (tmp != NULL)
+			HeapMemoryFree(tmp);
 
-      if (Status == STATUS_INVALID_DEVICE_REQUEST || 
-         Status == STATUS_OBJECT_NAME_NOT_FOUND) {
-            *BufferLength = 0;
-            Status = STATUS_SUCCESS;
-      } else {
-         *Buffer = NULL;
-         *BufferLength = 0;
-      }
-   }
+		if (status == STATUS_INVALID_DEVICE_REQUEST || status == STATUS_OBJECT_NAME_NOT_FOUND) {
+			*BufferLength = 0;
+			status = STATUS_SUCCESS;
+		} else {
+			*Buffer = NULL;
+			*BufferLength = 0;
+		}
+	}
 
-   DEBUG_EXIT_FUNCTION("0x%x, *Buffer=0x%p, *BufferLength=%u", Status, *Buffer, *BufferLength);
-   return Status;
+	DEBUG_EXIT_FUNCTION("0x%x, *Buffer=0x%p, *BufferLength=%u", status, *Buffer, *BufferLength);
+	return status;
 }
 
 
