@@ -233,6 +233,7 @@ Type
     Label12: TLabel;
     FastIoDispatchAddressEdit: TEdit;
     FastIoDispatchSizeEdit: TEdit;
+    CheckBox59: TCheckBox;
     Procedure FormCreate(Sender: TObject);
     Procedure FormClose(Sender: TObject; var Action: TCloseAction);
     Procedure Exit1Click(Sender: TObject);
@@ -801,7 +802,7 @@ If SaveDialog1.Execute Then
   LogSettingsFromGUI;
   Logger := Nil;
   If Sender = est1 Then
-    Logger := TSnapshotTextLogger.Create(FSnapshot, FLogSettings, FSnapshotFlags, FDriverList, FSpecialValues);
+    Logger := TSnapshotTextLogger<TStrings>.Create(FSnapshot, FLogSettings, FSnapshotFlags, FDriverList, FSpecialValues);
 
   If Assigned(Logger) Then
     begin
@@ -1300,6 +1301,7 @@ Var
 begin
 FLogSettings.General.IncludeVTHeader := CheckBox33.Checked;
 FLogSettings.General.IncludeOSVersion := CheckBox34.Checked;
+FLogSettings.General.IncludeDeviceDrivers := CheckBox59.Checked;
 
 FLogSettings.Clear;
 For I := 0 To LogIncludeDriversChL.Count - 1 Do

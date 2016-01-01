@@ -15,16 +15,17 @@ Type
     FSnapshot : TVTreeSnapshot;
     FLogSettings : TLogSettings;
     FSpecialValues : SPECIAL_VALUES;
-    Function GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean; Virtual; Abstract;
-    Function GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
-    Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
-    Function GenerateOSVersionInfo(ALog:TStrings):Boolean; Virtual; Abstract;
-    Function GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver); Virtual; Abstract;
-    Function GenerateVTHeader(ALog:TStrings):Boolean; Virtual; Abstract;
+    Function AssignLogStorage(ALogStorage:TObject):Boolean; Virtual; Abstract;
+    Function GenerateUnknownDeviceLog(AAddress:Pointer):Boolean; Virtual; Abstract;
+    Function GenerateDriverRecordLog(ARecord:TDriverSnapshot):Boolean; Virtual; Abstract;
+    Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot):Boolean; Virtual; Abstract;
+    Function GenerateOSVersionInfo:Boolean; Virtual; Abstract;
+    Function GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver):Boolean; Virtual; Abstract;
+    Function GenerateVTHeader:Boolean; Virtual; Abstract;
   Public
     Constructor Create(ASnapshot:TVTreeSnapshot; ALogSettings:TLogSettings; ASnapshotFlags:Cardinal; ADriverList:TDeviceDriverList; Var ASpecialValues:SPECIAL_VALUES); Reintroduce;
     Destructor Destroy; Override;
-    Function Generate(ALog:TStrings):Boolean;
+    Function Generate(ALogStorage:TObject):Boolean;
   end;
 
 Implementation
@@ -47,40 +48,53 @@ begin
 Inherited Destroy;
 end;
 
-Function TSnapshotLogger.Generate(ALog:TStrings):Boolean;
+Function TSnapshotLogger.Generate(ALogStorage:TObject):Boolean;
 Var
+  dd : TDeviceDriver;
   I, J : Integer;
   tmp : TDeviceSnapshot;
   DR : TDriverSnapshot;
 begin
-Result := True;
-If FLogSettings.General.IncludeVTHeader Then
-  GenerateVTHeader(ALog);
-
-If FLogSettings.General.IncludeOSVersion Then
-  GenerateOSVersionInfo(ALog);
-
-For I := 0 To FSnapshot.DriverRecordsCount - 1 Do
+Result := AssignLogStorage(ALogStorage);
+If Result Then
   begin
-  DR := FSnapshot.DriverRecords[I];
-  If FLogSettings.DriverIncluded(DR.Address) Then
+  If FLogSettings.General.IncludeVTHeader Then
+    GenerateVTHeader;
+
+  If FLogSettings.General.IncludeOSVersion Then
+    GenerateOSVersionInfo;
+
+  If FLogSettings.General.IncludeDeviceDrivers Then
     begin
-    GenerateDriverRecordLog(DR, ALog);
-    If FLogSettings.DriverSettings.IncludeDevices Then
+    For I := 0 To FDriverList.DriverCount - 1 Do
       begin
-      For J := 0 To DR.NumberOfDevices - 1 Do
+      dd := FDriverList.Driver[I];
+      GenerateDeviceDriverRecordLog(dd);
+      end;
+    end;
+
+  For I := 0 To FSnapshot.DriverRecordsCount - 1 Do
+    begin
+    DR := FSnapshot.DriverRecords[I];
+    If FLogSettings.DriverIncluded(DR.Address) Then
+      begin
+      GenerateDriverRecordLog(DR);
+      If FLogSettings.DriverSettings.IncludeDevices Then
         begin
-        tmp := FSnapshot.GetDeviceByAddress(DR.Devices[J]);
-        If Assigned(tmp) Then
-          GenerateDeviceRecordLog(tmp, ALog)
-        Else GenerateUnknownDeviceLog(DR.Devices[J], ALog);
+        For J := 0 To DR.NumberOfDevices - 1 Do
+          begin
+          tmp := FSnapshot.GetDeviceByAddress(DR.Devices[J]);
+          If Assigned(tmp) Then
+            GenerateDeviceRecordLog(tmp)
+          Else GenerateUnknownDeviceLog(DR.Devices[J]);
+          end;
         end;
       end;
     end;
   end;
-
-Result := True;
 end;
+
+
 
 End.
 

@@ -16,7 +16,8 @@ uses
   AbstractSnapshotRecord in 'AbstractSnapshotRecord.pas',
   DriverSnapshot in 'DriverSnapshot.pas',
   DeviceDrivers in 'DeviceDrivers.pas',
-  CodeSigning in 'CodeSigning.pas';
+  CodeSigning in 'CodeSigning.pas',
+  BinaryLogger in 'BinaryLogger.pas';
 
 {$R *.res}
 

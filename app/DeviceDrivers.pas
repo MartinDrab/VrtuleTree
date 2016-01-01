@@ -3,8 +3,8 @@ Unit DeviceDrivers;
 Interface
 
 Uses
-  Windows, Kernel,
-  Classes, Generics.Collections;
+  Windows, Classes, Generics.Collections,
+  Kernel, AbstractSnapshotRecord;
 
 Type
   TDriverListOption = (
@@ -16,7 +16,7 @@ Type
   TDriverListOptions = Set Of TDriverListOption;
 
   TCertNameArray = Array Of WideString;
-  TDeviceDriver = Class
+  TDeviceDriver = Class (TAbstractSnapshotRecord)
   Private
     FImageBase : Pointer;
     FImageSize : Cardinal;
@@ -78,7 +78,7 @@ Var
   cn : TStringList;
   cso : TCodeSigningOptionSet;
 begin
-Inherited Create;
+Inherited Create(srtLoadedDriver);
 FImageBase := AModule.ImageBase;
 FImageSize := AModule.ImageSize;
 FFileName := Copy(WideString(AnsiString(PAnsiChar(@AModule.FullPathName))), 1, Strlen(PAnsiChar(@AModule.FullPathName)));

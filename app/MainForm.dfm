@@ -889,15 +889,11 @@ object Form1: TForm1
     Top = 0
     Width = 462
     Height = 553
-    ActivePage = DriverTabSheet
+    ActivePage = OtherSettingsTabSheet
     Align = alClient
     TabOrder = 1
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object DeviceScrollBox: TScrollBox
         Left = 0
         Top = 0
@@ -2165,16 +2161,22 @@ object Form1: TForm1
             State = cbChecked
             TabOrder = 1
           end
+          object CheckBox59: TCheckBox
+            Left = 184
+            Top = 16
+            Width = 137
+            Height = 17
+            Caption = 'Include loaded drivers'
+            Checked = True
+            State = cbChecked
+            TabOrder = 2
+          end
         end
       end
     end
     object OtherSettingsTabSheet: TTabSheet
       Caption = 'Other Settings'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object OtherSettingsCaptureGroupBox: TGroupBox
         Left = 0
         Top = 0
@@ -2258,10 +2260,6 @@ object Form1: TForm1
       Caption = 'Loaded Drivers'
       ImageIndex = 4
       OnShow = LoadedDriversTabSheetShow
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LoadedDriversListView: TListView
         Left = 0
         Top = 0

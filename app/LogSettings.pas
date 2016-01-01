@@ -3,7 +3,7 @@ Unit LogSettings;
 Interface
 
 Uses
-  Generics.Collections;
+  Classes, Generics.Collections;
 
 Type
   TDeviceLogSettings = Record
@@ -62,6 +62,7 @@ Type
   TGeneralLogSettings = Record
     IncludeVTHeader : Boolean;
     IncludeOSVersion : Boolean;
+    IncludeDeviceDrivers : Boolean;
     end;
   PGeneralLogSettings = ^TGeneralLogSettings;
 
@@ -78,6 +79,9 @@ Type
       Constructor Create; Overload;
       Constructor Create(ASettings:TLogSettings); Overload;
       Destructor Destroy; Override;
+
+      Procedure LoadFromStream(AStream:TStream);
+      Procedure SaveToStream(AStream:TStream);
     end;
 
 Implementation
@@ -120,6 +124,16 @@ DeviceSettings := ASettings.DeviceSettings;
 For I := 0 To ASettings.FIncludedDrivers.Count - 1 Do
   FIncludedDrivers.Add(ASettings.FIncludedDrivers[I]);
 end;
+
+Procedure TLogSettings.LoadFromStream(AStream:TStream);
+begin
+end;
+
+Procedure TLogSettings.SaveToStream(AStream:TStream);
+begin
+end;
+
+
 
 End.
 

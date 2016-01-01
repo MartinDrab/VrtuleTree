@@ -8,14 +8,18 @@ Uses
   DeviceDrivers;
 
 Type
-  TSnapshotTextLogger = Class (TSnapshotLogger)
+  TSnapshotTextLogger<T:TStrings> = Class (TSnapshotLogger)
+  Private
+    FLogStorage : T;
+    Class Function DeviceCapabilitiesFlagsToStr(Const ADC:TDeviceCapabilities):WideString;
   Protected
-    Function GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean; Override;
-    Function GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean; Override;
-    Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean; Override;
-    Function GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver; ALog:TStrings):Boolean; Override;
-    Function GenerateOSVersionInfo(ALog:TStrings):Boolean; Override;
-    Function GenerateVTHeader(ALog:TStrings):Boolean; Override;
+    Function AssignLogStorage(ALogStorage:TObject):Boolean; Override;
+    Function GenerateUnknownDeviceLog(AAddress:Pointer):Boolean; Override;
+    Function GenerateDriverRecordLog(ARecord:TDriverSnapshot):Boolean; Override;
+    Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot):Boolean; Override;
+    Function GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver):Boolean; Override;
+    Function GenerateOSVersionInfo:Boolean; Override;
+    Function GenerateVTHeader:Boolean; Override;
   end;
 
 Implementation
@@ -23,38 +27,38 @@ Implementation
 Uses
   Windows, Kernel, SysUtils;
 
-Function TSnapshotTextLogger.GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean;
+Function TSnapshotTextLogger<T>.GenerateUnknownDeviceLog(AAddress:Pointer):Boolean;
 begin
-ALog.Add(Format('      <unknown device> (0x%p)', [AAddress]));
+FLogStorage.Add(Format('      <unknown device> (0x%p)', [AAddress]));
 Result := True;
 end;
 
-Function TSnapshotTextLogger.GenerateVTHeader(ALog:TStrings):Boolean;
+Function TSnapshotTextLogger<T>.GenerateVTHeader:Boolean;
 begin
-ALog.Add('VrtuleTree v1.6');
-ALog.Add('Created by Martin Drab, 2013-2016');
-ALog.Add(Format('Run from: %s', [ParamStr(0)]));
-ALog.Add('');
+FLogStorage.Add('VrtuleTree v1.6');
+FLogStorage.Add('Created by Martin Drab, 2013-2016');
+FLogStorage.Add(Format('Run from: %s', [ParamStr(0)]));
+FLogStorage.Add('');
 Result := True;
 end;
 
-Function TSnapshotTextLogger.GenerateOSVersionInfo(ALog:TStrings):Boolean;
+Function TSnapshotTextLogger<T>.GenerateOSVersionInfo:Boolean;
 Var
   info : OSVERSIONINFOEXW;
 begin
 info.dwOSVersionInfoSize := SizeOf(info);
 If RtlGetVersion(info) = 0 Then
   begin
-  ALog.Add(Format('OS major version: %d', [info.dwMajorVersion]));
-  ALog.Add(Format('OS minor version: %d', [info.dwMinorVersion]));
-  ALog.Add(Format('OS build number:  %d', [info.dwBuildNumber]));
+  FLogStorage.Add(Format('OS major version: %d', [info.dwMajorVersion]));
+  FLogStorage.Add(Format('OS minor version: %d', [info.dwMinorVersion]));
+  FLogStorage.Add(Format('OS build number:  %d', [info.dwBuildNumber]));
   end;
 
-ALog.Add('');
+FLogStorage.Add('');
 Result := True;
 end;
 
-Function DeviceCapabilitiesFlagsToStr(Const ADC:TDeviceCapabilities):WideString;
+Class Function TSnapshotTextLogger<T>.DeviceCapabilitiesFlagsToStr(Const ADC:TDeviceCapabilities):WideString;
 begin
 Result := '';
 If ADC.DeviceD1 Then
@@ -98,36 +102,36 @@ If Result <> '' Then
   Delete(Result, Length(Result) - 1, 2);
 end;
 
-Function TSnapshotTextLogger.GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean;
+Function TSnapshotTextLogger<T>.GenerateDeviceRecordLog(ARecord:TDeviceSnapshot):Boolean;
 Var
   I : Integer;
   tmp : TDeviceSnapshot;
   DL : TDeviceLogSettings;
 begin
 DL := FLogSettings.DeviceSettings;
-ALog.Add(Format('    DEVICE %s (0x%p)', [ARecord.Name, ARecord.Address]));
+FLogStorage.Add(Format('    DEVICE %s (0x%p)', [ARecord.Name, ARecord.Address]));
 If DL.IncludeType Then
-  ALog.Add(Format('      Type:            0x%x (%s)', [ARecord.DeviceType, DeviceTypeToStr(ARecord.DeviceType)]));
+  FLogStorage.Add(Format('      Type:            0x%x (%s)', [ARecord.DeviceType, DeviceTypeToStr(ARecord.DeviceType)]));
 
 If DL.IncludeFlags Then
   begin
   If DL.IncludeFlagsStr Then
-    ALog.Add(Format('      Flags:           0x%x (%s)', [ARecord.Flags, DeviceFlagsToStr(ARecord.Flags)]))
-  Else ALog.Add(Format('      Flags:           0x%x', [ARecord.Flags]));
+    FLogStorage.Add(Format('      Flags:           0x%x (%s)', [ARecord.Flags, DeviceFlagsToStr(ARecord.Flags)]))
+  Else FLogStorage.Add(Format('      Flags:           0x%x', [ARecord.Flags]));
   end;
 
 If DL.IncludeExtensionFlags Then
   begin
   If DL.IncludeExtensionFlagsStr Then
-    ALog.Add(Format('      Extension flags: 0x%x (%s)', [ARecord.ExtensionFlags, DeviceExtensionFlagsToStr(ARecord.ExtensionFlags)]))
-  Else ALog.Add(Format('      Extension flags: 0x%x', [ARecord.ExtensionFlags]));
+    FLogStorage.Add(Format('      Extension flags: 0x%x (%s)', [ARecord.ExtensionFlags, DeviceExtensionFlagsToStr(ARecord.ExtensionFlags)]))
+  Else FLogStorage.Add(Format('      Extension flags: 0x%x', [ARecord.ExtensionFlags]));
   end;
 
 If DL.IncludeCharacteristics Then
   begin
   If DL.IncludeCharacteristicsStr Then
-    ALog.Add(Format('      Characteristics: 0x%x (%s)', [ARecord.Characteristics, DeviceCharacteristicsToStr(ARecord.Characteristics)]))
-  Else ALog.Add(Format('      Characteristics: 0x%x', [ARecord.Characteristics]));
+    FLogStorage.Add(Format('      Characteristics: 0x%x (%s)', [ARecord.Characteristics, DeviceCharacteristicsToStr(ARecord.Characteristics)]))
+  Else FLogStorage.Add(Format('      Characteristics: 0x%x', [ARecord.Characteristics]));
   end;
 
 If DL.IncludePnPInformation Then
@@ -135,69 +139,67 @@ If DL.IncludePnPInformation Then
   If ((ARecord.Flags And DO_BUS_ENUMERATED_DEVICE) <> 0) Then
     begin
     If DL.IncludeFriendlyName Then
-      ALog.Add(Format('      Friendly name:     %s', [ARecord.DisplayName]));
+      FLogStorage.Add(Format('      Friendly name:     %s', [ARecord.DisplayName]));
 
     If DL.IncludeDescription Then
-      ALog.Add(Format('      Description:     %s', [ARecord.Description]));
+      FLogStorage.Add(Format('      Description:     %s', [ARecord.Description]));
 
     If DL.IncludeVendor Then
-      ALog.Add(Format('      Manufacturer:    %s', [ARecord.Vendor]));
+      FLogStorage.Add(Format('      Manufacturer:    %s', [ARecord.Vendor]));
 
     If DL.IncludeEnumerator Then
-      ALog.Add(Format('      Enumerator:      %s', [ARecord.Enumerator]));
+      FLogStorage.Add(Format('      Enumerator:      %s', [ARecord.Enumerator]));
 
     If DL.IncludeLocation Then
-      ALog.Add(Format('      Location:        %s', [ARecord.Location]));
+      FLogStorage.Add(Format('      Location:        %s', [ARecord.Location]));
 
     If DL.IncludeClass Then
       begin
       If DL.IncludeClassGuid Then
-        ALog.Add(Format('      Class:           %s (%s)', [ARecord.ClassName, ARecord.ClassGuid]))
-      Else ALog.Add(Format('      Class:           %s', [ARecord.ClassName]));
+        FLogStorage.Add(Format('      Class:           %s (%s)', [ARecord.ClassName, ARecord.ClassGuid]))
+      Else FLogStorage.Add(Format('      Class:           %s', [ARecord.ClassName]));
       end;
 
     If (DL.IncludeDeviceId) And ((FSnapshotFlags And VTREE_SNAPSHOT_DEVICE_ID) <> 0) Then
-      ALog.Add(Format('      Device ID:       %s', [ARecord.DeviceId]));
+      FLogStorage.Add(Format('      Device ID:       %s', [ARecord.DeviceId]));
 
     If DL.IncludeInstanceId Then
-      ALog.Add(Format('      Instance ID:     %s', [ARecord.InstanceId]));
+      FLogStorage.Add(Format('      Instance ID:     %s', [ARecord.InstanceId]));
 
     If DL.IncludeHardwareIDs Then
-      ALog.Add(Format('      Hardware IDs:    (%s)', [DeviceIDListToStr(ARecord.HardwareIds)]));
+      FLogStorage.Add(Format('      Hardware IDs:    (%s)', [DeviceIDListToStr(ARecord.HardwareIds)]));
 
     If DL.IncludeCompatibleIDs Then
-      ALog.Add(Format('      Compatible IDs:  (%s)', [DeviceIDListToStr(ARecord.CompatibleIds)]));
+      FLogStorage.Add(Format('      Compatible IDs:  (%s)', [DeviceIDListToStr(ARecord.CompatibleIds)]));
 
     If DL.IncludeRemovalRelations Then
-      ALog.Add(Format('      Removal relations: (%s)', [DeviceRelationsToStr(ARecord.RemovalRelations)]));
+      FLogStorage.Add(Format('      Removal relations: (%s)', [DeviceRelationsToStr(ARecord.RemovalRelations)]));
 
     If DL.IncludeEjectRelations Then
-      ALog.Add(Format('      Eject relations:   (%s)', [DeviceRelationsToStr(ARecord.EjectRelations)]));
+      FLogStorage.Add(Format('      Eject relations:   (%s)', [DeviceRelationsToStr(ARecord.EjectRelations)]));
 
     If DL.IncludeDeviceCapabilities Then
       begin
-      ALog.Add(       '      Device capabilities: (');
-      ALog.Add(Format('        Flags:         (%s)', [DeviceCapabilitiesFlagsToStr(ARecord.Capabilities)]));
-      ALog.Add(Format('        Address:       %u', [ARecord.Capabilities.Address]));
-      ALog.Add(Format('        UI number:     %u', [ARecord.Capabilities.UINumber]));
+      FLogStorage.Add(       '      Device capabilities:');
+      FLogStorage.Add(Format('        Flags:         (%s)', [DeviceCapabilitiesFlagsToStr(ARecord.Capabilities)]));
+      FLogStorage.Add(Format('        Address:       %u', [ARecord.Capabilities.Address]));
+      FLogStorage.Add(Format('        UI number:     %u', [ARecord.Capabilities.UINumber]));
       If ARecord.Capabilities.D1Latency <> 0 Then
-        ALog.Add(Format('        D1 latency:    %u ms', [ARecord.Capabilities.D1Latency Div 10]));
+        FLogStorage.Add(Format('        D1 latency:    %u ms', [ARecord.Capabilities.D1Latency Div 10]));
 
       If ARecord.Capabilities.D2Latency <> 0 Then
-        ALog.Add(Format('        D2 latency:    %u ms', [ARecord.Capabilities.D2Latency Div 10]));
+        FLogStorage.Add(Format('        D2 latency:    %u ms', [ARecord.Capabilities.D2Latency Div 10]));
 
       If ARecord.Capabilities.D3Latency <> 0 Then
-        ALog.Add(Format('        D3 latency:    %u ms', [ARecord.Capabilities.D3Latency Div 10]));
-
-      ALog.Add('      )');
+        FLogStorage.Add(Format('        D3 latency:    %u ms', [ARecord.Capabilities.D3Latency Div 10]));
       end;
 
-    ALog.Add(Format('      Device node: 0x%p', [ARecord.DeviceNode]));
+    FLogStorage.Add(Format('      Device node: 0x%p', [ARecord.DeviceNode]));
     If ((FSnapshotFlags And VTREE_SNAPSHOT_DEVNODE_TREE) <> 0) Then
       begin
-      ALog.Add(Format('      Parent: 0x%p', [ARecord.Parent]));
-      ALog.Add(Format('      Child: 0x%p', [ARecord.Child]));
-      ALog.Add(Format('      Sibling: 0x%p', [ARecord.Sibling]));
+      FLogStorage.Add(Format('      Parent: 0x%p', [ARecord.Parent]));
+      FLogStorage.Add(Format('      Child: 0x%p', [ARecord.Child]));
+      FLogStorage.Add(Format('      Sibling: 0x%p', [ARecord.Sibling]));
       end;
     end;
   end;
@@ -206,44 +208,44 @@ If DL.IncludeDiskDevice Then
   begin
   tmp := FSnapshot.GetDeviceByAddress(ARecord.DiskDeviceAddress);
   If Assigned(tmp) Then
-    ALog.Add(Format('      Disk device:     %s (0x%p) (%s)', [tmp.Name, tmp.Address, tmp.DriverName]));
+    FLogStorage.Add(Format('      Disk device:     %s (0x%p) (%s)', [tmp.Name, tmp.Address, tmp.DriverName]));
   end;
 
 If DL.IncludeLowerDevicesCount Then
-  ALog.Add(Format('      Number of lower Devices: %d', [ARecord.NumberOfLowerDevices]));
+  FLogStorage.Add(Format('      Number of lower Devices: %d', [ARecord.NumberOfLowerDevices]));
 
 If (DL.IncludeLowerDevices) And (ARecord.NumberOfLowerDevices > 0) Then
   begin
-  ALog.Add('      Lower devices:');
+  FLogStorage.Add('      Lower devices:');
   For I := 0 To ARecord.NumberOfLowerDevices - 1 Do
     begin
     tmp := FSnapshot.GetDeviceByAddress(ARecord.LowerDevices[I]);
     If Assigned(tmp) Then
-      ALog.Add(Format('        %s (0x%p) (%s)', [tmp.Name, tmp.Address, tmp.DriverName]))
-    Else ALog.Add(Format('        <unknown> (0x%p)', [ARecord.LowerDevices[I]]));
+      FLogStorage.Add(Format('        %s (0x%p) (%s)', [tmp.Name, tmp.Address, tmp.DriverName]))
+    Else FLogStorage.Add(Format('        <unknown> (0x%p)', [ARecord.LowerDevices[I]]));
     end;
   end;
 
 If DL.IncludeUpperDevicesCount Then
-  ALog.Add(Format('      Number of upper Devices: %d', [ARecord.NumberOfUpperDevices]));
+  FLogStorage.Add(Format('      Number of upper Devices: %d', [ARecord.NumberOfUpperDevices]));
 
 If (DL.IncludeUpperDevices) And
    (ARecord.NumberOfUpperDevices > 0) Then
   begin
-  ALog.Add('      Upper devices:');
+  FLogStorage.Add('      Upper devices:');
   For I := 0 To ARecord.NumberOfUpperDevices - 1 Do
     begin
     tmp := FSnapshot.GetDeviceByAddress(ARecord.UpperDevices[I]);
     If Assigned(tmp) Then
-      ALog.Add(Format('        %s (0x%p) (%s)', [tmp.Name, tmp.Address, tmp.DriverName]))
-    Else ALog.Add(Format('        <unknown> (0x%p)', [ARecord.UpperDevices[I]]));
+      FLogStorage.Add(Format('        %s (0x%p) (%s)', [tmp.Name, tmp.Address, tmp.DriverName]))
+    Else FLogStorage.Add(Format('        <unknown> (0x%p)', [ARecord.UpperDevices[I]]));
     end;
   end;
 
 Result := True;
 end;
 
-Function TSnapshotTextLogger.GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean;
+Function TSnapshotTextLogger<T>.GenerateDriverRecordLog(ARecord:TDriverSnapshot):Boolean;
 Var
   I : Integer;
   lineString : WideString;
@@ -253,35 +255,35 @@ Var
   DL : TDriverLogSettings;
 begin
 DL := FLogSettings.DriverSettings;
-ALog.Add(Format('DRIVER %s (0x%p)', [ARecord.Name, ARecord.Address]));
+FLogStorage.Add(Format('DRIVER %s (0x%p)', [ARecord.Name, ARecord.Address]));
 If DL.IncludeFileName Then
-  ALog.Add(Format('  Filename:           %s', [ARecord.ImagePath]));
+  FLogStorage.Add(Format('  Filename:           %s', [ARecord.ImagePath]));
 
 If DL.IncludeImageBase Then
-  ALog.Add(Format('  Image base address: 0x%p', [ARecord.ImageBase]));
+  FLogStorage.Add(Format('  Image base address: 0x%p', [ARecord.ImageBase]));
 
 If DL.IncludeImageSize Then
-  ALog.Add(Format('  Image size:         %d', [ARecord.ImageSize]));
+  FLogStorage.Add(Format('  Image size:         %d', [ARecord.ImageSize]));
 
 If DL.IncludeDriverEntry Then
-  ALog.Add(Format('  DriverEntry:        0x%p', [ARecord.DriverEntry]));
+  FLogStorage.Add(Format('  DriverEntry:        0x%p', [ARecord.DriverEntry]));
 
 If DL.IncludeDriverUnload Then
-  ALog.Add(Format('  DriverUnload:       0x%p', [ARecord.DriverUnload]));
+  FLogStorage.Add(Format('  DriverUnload:       0x%p', [ARecord.DriverUnload]));
 
 If DL.IncludeStartIo Then
-  ALog.Add(Format('  StartIo:            0x%p', [ARecord.StartIo]));
+  FLogStorage.Add(Format('  StartIo:            0x%p', [ARecord.StartIo]));
 
 If DL.IncludeFlags Then
   begin
   If DL.IncludeFlagsStr Then
-    ALog.Add(Format('  Flags:              0x%x (%s)', [ARecord.Flags, DriverFlagsToStr(ARecord.Flags)]))
-  Else ALog.Add(Format('  Flags:              0x%x', [ARecord.Flags]));
+    FLogStorage.Add(Format('  Flags:              0x%x (%s)', [ARecord.Flags, DriverFlagsToStr(ARecord.Flags)]))
+  Else FLogStorage.Add(Format('  Flags:              0x%x', [ARecord.Flags]));
   end;
 
 If DL.IncludeMajorFunctions Then
   begin
-  ALog.Add('  MajorFunction');
+  FLogStorage.Add('  MajorFunction');
   For I := 0 To 27 Do
     begin
     dd := FDriverList.GetDriverByRange(ARecord.MajorFunction[I]);
@@ -296,19 +298,19 @@ If DL.IncludeMajorFunctions Then
       lineString := lineString + ')';
       end;
 
-    ALog.Add(lineString);
+    FLogStorage.Add(lineString);
     end;
   end;
 
 If (DL.IncludeFastIoDispatch) And
   ((FSnapshotFlags And VTREE_SNAPSHOT_FAST_IO_DISPATCH) <> 0) Then
   begin
-  ALog.Add('  Fast I/O Dispatch');
-  ALog.Add(Format('    Address: 0x%p', [ARecord.FastIoAddress]));
+  FLogStorage.Add('  Fast I/O Dispatch');
+  FLogStorage.Add(Format('    Address: 0x%p', [ARecord.FastIoAddress]));
   If Assigned(ARecord.FastIoAddress) Then
     begin
     fd := @ARecord.FastIoDispatch;
-    ALog.Add(Format('    Size: %u (%u routines)', [fd.SizeOfFastIoDispatch, (fd.SizeOfFastIoDispatch Div SizeOf(Pointer)) - 1]));
+    FLogStorage.Add(Format('    Size: %u (%u routines)', [fd.SizeOfFastIoDispatch, (fd.SizeOfFastIoDispatch Div SizeOf(Pointer)) - 1]));
     For I := Low(fd.Routines) To (fd.SizeOfFastIoDispatch Div SizeOf(Pointer)) - 2 Do
       begin
       dd := FDriverList.GetDriverByRange(fd.Routines[I]);
@@ -323,19 +325,25 @@ If (DL.IncludeFastIoDispatch) And
         lineString := lineString + ')';
         end;
 
-      ALog.Add(lineString);
+      FLogStorage.Add(lineString);
       end;
     end;
   end;
 
 If DL.IncludeNumberOfDevices Then
-  ALog.Add(Format('  Number of devices:  %d', [ARecord.NumberOfDevices]));
+  FLogStorage.Add(Format('  Number of devices:  %d', [ARecord.NumberOfDevices]));
 
 Result := True;
 end;
 
-Function TSnapshotTextLogger.GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver; ALog:TStrings):Boolean;
+Function TSnapshotTextLogger<T>.GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver):Boolean;
 begin
+Result := True;
+end;
+
+Function TSnapshotTextLogger<T>.AssignLogStorage(ALogStorage:TObject):Boolean;
+begin
+FLogStorage := (ALogStorage As T);
 Result := True;
 end;
 
