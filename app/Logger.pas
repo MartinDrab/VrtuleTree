@@ -4,20 +4,25 @@ Interface
 
 Uses
   Snapshot, LogSettings, Classes,
-  VTreeDriver, DriverSnapshot, DeviceSnapshot;
+  VTreeDriver, DriverSnapshot, DeviceSnapshot,
+  DeviceDrivers;
 
 Type
   TSnapshotLogger = Class
   Protected
+    FSnapshotFlags : Cardinal;
+    FDriverList : TDeviceDriverList;
     FSnapshot : TVTreeSnapshot;
     FLogSettings : TLogSettings;
+    FSpecialValues : SPECIAL_VALUES;
     Function GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean; Virtual; Abstract;
     Function GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
     Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean; Virtual; Abstract;
     Function GenerateOSVersionInfo(ALog:TStrings):Boolean; Virtual; Abstract;
+    Function GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver); Virtual; Abstract;
     Function GenerateVTHeader(ALog:TStrings):Boolean; Virtual; Abstract;
   Public
-    Constructor Create(ASnapshot:TVTreeSnapshot; ALogSettings:TLogSettings);
+    Constructor Create(ASnapshot:TVTreeSnapshot; ALogSettings:TLogSettings; ASnapshotFlags:Cardinal; ADriverList:TDeviceDriverList; Var ASpecialValues:SPECIAL_VALUES); Reintroduce;
     Destructor Destroy; Override;
     Function Generate(ALog:TStrings):Boolean;
   end;
@@ -27,11 +32,14 @@ Implementation
 Uses
   SysUtils;
 
-Constructor TSnapshotLogger.Create(ASnapshot:TVTreeSnapshot; ALogSettings:TLogSettings);
+Constructor TSnapshotLogger.Create(ASnapshot:TVTreeSnapshot; ALogSettings:TLogSettings; ASnapshotFlags:Cardinal; ADriverList:TDeviceDriverList; Var ASpecialValues:SPECIAL_VALUES);
 begin
 Inherited Create;
 FSnapshot := ASnapshot;
 FLogSettings := ALogSettings;
+FDriverList := ADriverList;
+FSnapshotFlags := ASnapshotFlags;
+FSpecialValues := ASpecialValues;
 end;
 
 Destructor TSnapshotLogger.Destroy;

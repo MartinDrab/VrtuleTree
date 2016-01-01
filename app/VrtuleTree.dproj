@@ -63,7 +63,7 @@
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.2.0.200;InternalName=VrtuleTree;LegalCopyright=Created by Martin Drab;LegalTrademarks=;OriginalFilename=VrtuleTree.exe;ProductName=VrtuleTree;ProductVersion=1.2.1.0;Comments=</VerInfo_Keys>
 			<DCC_DcpOutput>.\..\tmp\$(Platform)\$(Config)</DCC_DcpOutput>
 			<DCC_UsePackage>bindcompfmx;fmx;rtl;dbrtl;IndySystem;DbxClientDriver;bindcomp;inetdb;DBXInterBaseDriver;xmlrtl;DbxCommonDriver;IndyProtocols;DBXMySQLDriver;dbxcds;soaprtl;FMXTee;bindengine;CustomIPTransport;dsnap;IndyCore;FmxTeeUI;inet;inetdbxpress;IPIndyImpl;dbexpress;$(DCC_UsePackage)</DCC_UsePackage>
-			<Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
+			<Icon_MainIcon>..\resources\vtree.ico</Icon_MainIcon>
 			<DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
 			<DCC_DcuOutput>.\..\tmp\$(Platform)\$(Config)</DCC_DcuOutput>
 			<DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>

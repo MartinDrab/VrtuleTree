@@ -55,6 +55,7 @@ Type
     IncludeMajorFunctions : Boolean;
     IncludeNumberOfDevices : Boolean;
     IncludeDevices : Boolean;
+    IncludeFastIoDispatch : Boolean;
     end;
   PDriverLogSettings = ^TDriverLogSettings;
 

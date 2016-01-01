@@ -4,7 +4,8 @@ Interface
 
 Uses
   Logger, Snapshot, Classes, LogSettings,
-  VTreeDriver, DriverSnapshot, DeviceSnapshot;
+  VTreeDriver, DriverSnapshot, DeviceSnapshot,
+  DeviceDrivers;
 
 Type
   TSnapshotTextLogger = Class (TSnapshotLogger)
@@ -12,6 +13,7 @@ Type
     Function GenerateUnknownDeviceLog(AAddress:Pointer; ALog:TStrings):Boolean; Override;
     Function GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean; Override;
     Function GenerateDeviceRecordLog(ARecord:TDeviceSnapshot; ALog:TStrings):Boolean; Override;
+    Function GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver; ALog:TStrings):Boolean; Override;
     Function GenerateOSVersionInfo(ALog:TStrings):Boolean; Override;
     Function GenerateVTHeader(ALog:TStrings):Boolean; Override;
   end;
@@ -29,8 +31,8 @@ end;
 
 Function TSnapshotTextLogger.GenerateVTHeader(ALog:TStrings):Boolean;
 begin
-ALog.Add('VrtuleTree v1.5');
-ALog.Add('Created by Martin Drab, 2013');
+ALog.Add('VrtuleTree v1.6');
+ALog.Add('Created by Martin Drab, 2013-2016');
 ALog.Add(Format('Run from: %s', [ParamStr(0)]));
 ALog.Add('');
 Result := True;
@@ -41,7 +43,7 @@ Var
   info : OSVERSIONINFOEXW;
 begin
 info.dwOSVersionInfoSize := SizeOf(info);
-If GetVersionEx(info) Then
+If RtlGetVersion(info) = 0 Then
   begin
   ALog.Add(Format('OS major version: %d', [info.dwMajorVersion]));
   ALog.Add(Format('OS minor version: %d', [info.dwMinorVersion]));
@@ -154,7 +156,7 @@ If DL.IncludePnPInformation Then
       Else ALog.Add(Format('      Class:           %s', [ARecord.ClassName]));
       end;
 
-    If DL.IncludeDeviceId Then
+    If (DL.IncludeDeviceId) And ((FSnapshotFlags And VTREE_SNAPSHOT_DEVICE_ID) <> 0) Then
       ALog.Add(Format('      Device ID:       %s', [ARecord.DeviceId]));
 
     If DL.IncludeInstanceId Then
@@ -188,6 +190,14 @@ If DL.IncludePnPInformation Then
         ALog.Add(Format('        D3 latency:    %u ms', [ARecord.Capabilities.D3Latency Div 10]));
 
       ALog.Add('      )');
+      end;
+
+    ALog.Add(Format('      Device node: 0x%p', [ARecord.DeviceNode]));
+    If ((FSnapshotFlags And VTREE_SNAPSHOT_DEVNODE_TREE) <> 0) Then
+      begin
+      ALog.Add(Format('      Parent: 0x%p', [ARecord.Parent]));
+      ALog.Add(Format('      Child: 0x%p', [ARecord.Child]));
+      ALog.Add(Format('      Sibling: 0x%p', [ARecord.Sibling]));
       end;
     end;
   end;
@@ -236,6 +246,10 @@ end;
 Function TSnapshotTextLogger.GenerateDriverRecordLog(ARecord:TDriverSnapshot; ALog:TStrings):Boolean;
 Var
   I : Integer;
+  lineString : WideString;
+  fd : PFAST_IO_DISPATCH;
+  routineName : WideString;
+  dd : TDeviceDriver;
   DL : TDriverLogSettings;
 begin
 DL := FLogSettings.DriverSettings;
@@ -269,7 +283,49 @@ If DL.IncludeMajorFunctions Then
   begin
   ALog.Add('  MajorFunction');
   For I := 0 To 27 Do
-    ALog.Add(Format('    %s: 0x%p', [IrpMajorToStr(I), ARecord.MajorFunction[I]]));
+    begin
+    dd := FDriverList.GetDriverByRange(ARecord.MajorFunction[I]);
+    routineName := FSnapshot.TranslateAddress(FSpecialValues, ARecord.MajorFunction[I]);
+    lineString := Format('    %s: 0x%p', [IrpMajorToStr(I), ARecord.MajorFunction[I]]);
+    If Assigned(dd) Then
+      begin
+      lineString := Format('%s (%s', [lineString, dd.FileName]);
+      If routineName <> '' Then
+        lineString := Format('%s!%s', [lineString, routineName]);
+
+      lineString := lineString + ')';
+      end;
+
+    ALog.Add(lineString);
+    end;
+  end;
+
+If (DL.IncludeFastIoDispatch) And
+  ((FSnapshotFlags And VTREE_SNAPSHOT_FAST_IO_DISPATCH) <> 0) Then
+  begin
+  ALog.Add('  Fast I/O Dispatch');
+  ALog.Add(Format('    Address: 0x%p', [ARecord.FastIoAddress]));
+  If Assigned(ARecord.FastIoAddress) Then
+    begin
+    fd := @ARecord.FastIoDispatch;
+    ALog.Add(Format('    Size: %u (%u routines)', [fd.SizeOfFastIoDispatch, (fd.SizeOfFastIoDispatch Div SizeOf(Pointer)) - 1]));
+    For I := Low(fd.Routines) To (fd.SizeOfFastIoDispatch Div SizeOf(Pointer)) - 2 Do
+      begin
+      dd := FDriverList.GetDriverByRange(fd.Routines[I]);
+      lineString := Format('    %s: 0x%p', [FastIoIndexToStr(I), fd.Routines[I]]);
+      If Assigned(dd) Then
+        begin
+        routineName := FSnapshot.TranslateAddress(FSpecialValues, fd.Routines[I]);
+        lineString := Format('%s (%s', [lineString, dd.FileName]);
+        If routineName <> '' Then
+          lineString := Format('%s!%s', [lineString, routineName]);
+
+        lineString := lineString + ')';
+        end;
+
+      ALog.Add(lineString);
+      end;
+    end;
   end;
 
 If DL.IncludeNumberOfDevices Then
@@ -278,7 +334,10 @@ If DL.IncludeNumberOfDevices Then
 Result := True;
 end;
 
-
+Function TSnapshotTextLogger.GenerateDeviceDriverRecordLog(ADeviceDriver:TDeviceDriver; ALog:TStrings):Boolean;
+begin
+Result := True;
+end;
 
 End.
 

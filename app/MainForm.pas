@@ -254,6 +254,8 @@ Type
     procedure TreeTypeSubItemOnClick(Sender: TObject);
     procedure LoadedDriversTabSheetShow(Sender: TObject);
     procedure LoadedDriversListViewData(Sender: TObject; Item: TListItem);
+    procedure DriverScrollBoxMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
   Private
     FSpecialValues : SPECIAL_VALUES;
     FDriverList : TDeviceDriverList;
@@ -771,6 +773,24 @@ If Assigned(L) Then
 Else WarningDialog('No item selected');
 end;
 
+procedure TForm1.DriverScrollBoxMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+Var
+  I : Integer;
+  sb : TScrollBox;
+begin
+sb := (Sender As TScrollBox);
+for I := 1 to Mouse.WheelScrollLines do
+  Try
+    If WheelDelta > 0 then
+      sb.Perform(WM_VSCROLL, SB_LINEUP, 0)
+    Else
+      sb.Perform(WM_VSCROLL, SB_LINEDOWN, 0);
+  Finally
+    sb.Perform(WM_VSCROLL, SB_ENDSCROLL, 0);
+  end;
+end;
+
 Procedure TForm1.est1Click(Sender: TObject);
 Var
   Log : TStringList;
@@ -781,7 +801,7 @@ If SaveDialog1.Execute Then
   LogSettingsFromGUI;
   Logger := Nil;
   If Sender = est1 Then
-    Logger := TSnapshotTextLogger.Create(FSnapshot, FLogSettings);
+    Logger := TSnapshotTextLogger.Create(FSnapshot, FLogSettings, FSnapshotFlags, FDriverList, FSpecialValues);
 
   If Assigned(Logger) Then
     begin
@@ -1299,6 +1319,7 @@ FLogSettings.DriverSettings.IncludeFlagsStr := LogDriverSettingsChl.Checked[7];
 FLogSettings.DriverSettings.IncludeMajorFunctions := LogDriverSettingsChl.Checked[8];
 FLogSettings.DriverSettings.IncludeNumberOfDevices := LogDriverSettingsChl.Checked[9];
 FLogSettings.DriverSettings.IncludeDevices := LogDriverSettingsChl.Checked[10];
+FLogSettings.DriverSettings.IncludeFastIoDispatch := LogDriverSettingsChl.Checked[11];
 
 FLogSettings.DeviceSettings.IncludeType := LogDeviceSettingsChL.Checked[0];
 FLogSettings.DeviceSettings.IncludeDiskDevice := LogDeviceSettingsChL.Checked[1];

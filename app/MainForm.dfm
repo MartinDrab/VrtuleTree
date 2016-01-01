@@ -889,11 +889,15 @@ object Form1: TForm1
     Top = 0
     Width = 462
     Height = 553
-    ActivePage = OtherSettingsTabSheet
+    ActivePage = DriverTabSheet
     Align = alClient
     TabOrder = 1
     object DeviceTabSheet: TTabSheet
       Caption = 'Device'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object DeviceScrollBox: TScrollBox
         Left = 0
         Top = 0
@@ -1597,6 +1601,7 @@ object Form1: TForm1
         Align = alClient
         AutoScroll = False
         TabOrder = 0
+        OnMouseWheel = DriverScrollBoxMouseWheel
         object DriverDevicesGroupBox: TGroupBox
           Left = 0
           Top = 209
@@ -1913,10 +1918,6 @@ object Form1: TForm1
             RowSelect = True
             TabOrder = 1
             ViewStyle = vsReport
-            ExplicitLeft = 16
-            ExplicitTop = 57
-            ExplicitWidth = 415
-            ExplicitHeight = 100
           end
         end
       end
@@ -2170,6 +2171,10 @@ object Form1: TForm1
     object OtherSettingsTabSheet: TTabSheet
       Caption = 'Other Settings'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object OtherSettingsCaptureGroupBox: TGroupBox
         Left = 0
         Top = 0
@@ -2253,6 +2258,10 @@ object Form1: TForm1
       Caption = 'Loaded Drivers'
       ImageIndex = 4
       OnShow = LoadedDriversTabSheetShow
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LoadedDriversListView: TListView
         Left = 0
         Top = 0

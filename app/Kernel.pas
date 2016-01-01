@@ -320,6 +320,8 @@ Function DeviceIDListToStr(AIDList : Array Of WideString):WideString;
 Function DeviceRelationsToStr(AArray : Array Of Pointer):WideString;
 Function FastIoIndexToStr(AIndex:Cardinal):WideString;
 
+Function RtlGetVersion(Var AVersionInfo:OSVERSIONINFOEXW):Cardinal; StdCall; External 'ntdll.dll';
+
 Implementation
 
 Uses
