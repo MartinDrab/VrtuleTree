@@ -234,6 +234,7 @@ Type
     FastIoDispatchAddressEdit: TEdit;
     FastIoDispatchSizeEdit: TEdit;
     CheckBox59: TCheckBox;
+    CheckBox60: TCheckBox;
     Procedure FormCreate(Sender: TObject);
     Procedure FormClose(Sender: TObject; var Action: TCloseAction);
     Procedure Exit1Click(Sender: TObject);
@@ -1302,6 +1303,7 @@ begin
 FLogSettings.General.IncludeVTHeader := CheckBox33.Checked;
 FLogSettings.General.IncludeOSVersion := CheckBox34.Checked;
 FLogSettings.General.IncludeDeviceDrivers := CheckBox59.Checked;
+FLogSettings.DriverSettings.IncludeEmptyMajorFunctions := CheckBox60.Checked;
 
 FLogSettings.Clear;
 For I := 0 To LogIncludeDriversChL.Count - 1 Do

@@ -889,7 +889,7 @@ object Form1: TForm1
     Top = 0
     Width = 462
     Height = 553
-    ActivePage = OtherSettingsTabSheet
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 1
     object DeviceTabSheet: TTabSheet
@@ -2170,6 +2170,16 @@ object Form1: TForm1
             Checked = True
             State = cbChecked
             TabOrder = 2
+          end
+          object CheckBox60: TCheckBox
+            Left = 184
+            Top = 36
+            Width = 169
+            Height = 17
+            Caption = 'Include empty IRP handlers'
+            Checked = True
+            State = cbChecked
+            TabOrder = 3
           end
         end
       end

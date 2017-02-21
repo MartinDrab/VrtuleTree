@@ -36,7 +36,7 @@ end;
 Function TSnapshotTextLogger<T>.GenerateVTHeader:Boolean;
 begin
 FLogStorage.Add('VrtuleTree v1.6');
-FLogStorage.Add('Created by Martin Drab, 2013-2016');
+FLogStorage.Add('Created by Martin Drab, 2013-2017');
 FLogStorage.Add(Format('Run from: %s', [ParamStr(0)]));
 FLogStorage.Add('');
 Result := True;
@@ -288,17 +288,21 @@ If DL.IncludeMajorFunctions Then
     begin
     dd := FDriverList.GetDriverByRange(ARecord.MajorFunction[I]);
     routineName := FSnapshot.TranslateAddress(FSpecialValues, ARecord.MajorFunction[I]);
-    lineString := Format('    %s: 0x%p', [IrpMajorToStr(I), ARecord.MajorFunction[I]]);
-    If Assigned(dd) Then
-      begin
-      lineString := Format('%s (%s', [lineString, dd.FileName]);
-      If routineName <> '' Then
-        lineString := Format('%s!%s', [lineString, routineName]);
+    If (Not FLogSettings.DriverSettings.IncludeEmptyMajorFunctions) Or
+       (routineName <> 'IopInvalidDeviceRequest') Then
+       begin
+        lineString := Format('    %s: 0x%p', [IrpMajorToStr(I), ARecord.MajorFunction[I]]);
+        If Assigned(dd) Then
+          begin
+          lineString := Format('%s (%s', [lineString, dd.FileName]);
+          If routineName <> '' Then
+            lineString := Format('%s!%s', [lineString, routineName]);
 
-      lineString := lineString + ')';
-      end;
+          lineString := lineString + ')';
+          end;
 
-    FLogStorage.Add(lineString);
+        FLogStorage.Add(lineString);
+        end;
     end;
   end;
 

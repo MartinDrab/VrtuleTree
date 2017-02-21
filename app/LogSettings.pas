@@ -44,6 +44,7 @@ Type
   PDeviceLogSettings = ^TDeviceLogSettings;
 
   TDriverLogSettings = Record
+    IncludeEmptyMajorFunctions : Boolean;
     IncludeFileName : Boolean;
     IncludeImageBase : Boolean;
     IncludeImageSize : Boolean;
