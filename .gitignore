@@ -1,6 +1,8 @@
-/bin
-/tmp
-/app/__history
+bin
+tmp
+app/__history
 *.sdf
 *.local
-/www
+*.user
+.vs
+*.identcache
